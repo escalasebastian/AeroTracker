@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: AeroTracker
+  messages:
+    basename: messages
+    encoding: UTF-8
+telegram:
+  bot-token: ${TELEGRAM_BOT_TOKEN:mock-token-for-dev}
