@@ -1,6 +1,6 @@
 package com.aerotracker.telegram;
 
-import com.aerotracker.telegram.dto.TelegramCommandContext;
+import com.aerotracker.telegram.handler.TelegramCommandHandler;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 

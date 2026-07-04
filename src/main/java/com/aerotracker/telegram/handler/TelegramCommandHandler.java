@@ -1,6 +1,6 @@
-package com.aerotracker.telegram;
+package com.aerotracker.telegram.handler;
 
-import com.aerotracker.telegram.dto.TelegramCommandContext;
+import com.aerotracker.telegram.TelegramCommandContext;
 
 public interface TelegramCommandHandler {
     /**

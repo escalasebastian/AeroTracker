@@ -1,4 +1,4 @@
-package com.aerotracker.telegram.dto;
+package com.aerotracker.telegram;
 
 import java.util.Locale;
 

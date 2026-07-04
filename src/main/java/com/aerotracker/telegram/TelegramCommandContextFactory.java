@@ -1,6 +1,5 @@
 package com.aerotracker.telegram;
 
-import com.aerotracker.telegram.dto.TelegramCommandContext;
 import com.aerotracker.telegram.dto.TelegramUpdate;
 import org.springframework.stereotype.Component;
 
