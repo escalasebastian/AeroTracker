@@ -1,11 +1,13 @@
 package com.aerotracker.telegram.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record TelegramUser(
         Long id,
-        boolean is_bot,
-        String first_name,
-        String last_name,
+        @JsonProperty("is_bot") boolean isBot,
+        @JsonProperty("first_name") String firstName,
+        @JsonProperty("last_name") String lastName,
         String username,
-        String language_code
+        @JsonProperty("language_code") String languageCode
 ) {
 }

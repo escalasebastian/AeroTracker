@@ -1,5 +1,6 @@
 package com.aerotracker.telegram;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -28,9 +29,9 @@ public class TelegramClient {
     }
 
     private record SendMessageRequest(
-            Long chat_id,
+            @JsonProperty("chat_id") Long chatId,
             String text,
-            String parse_mode
+            @JsonProperty("parse_mode") String parseMode
     ) {
     }
 }

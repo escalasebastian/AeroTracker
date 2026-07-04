@@ -1,7 +1,9 @@
 package com.aerotracker.telegram.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record TelegramMessage(
-        Long message_id,
+        @JsonProperty("message_id") Long messageId,
         TelegramUser from,
         TelegramChat chat,
         String text

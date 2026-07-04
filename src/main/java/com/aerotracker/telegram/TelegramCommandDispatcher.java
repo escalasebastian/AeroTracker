@@ -7,11 +7,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class TelegramCommandService {
+public class TelegramCommandDispatcher {
     private final List<TelegramCommandHandler> handlers;
     private final MessageSource messageSource;
 
-    public TelegramCommandService(List<TelegramCommandHandler> handlers, MessageSource messageSource) {
+    public TelegramCommandDispatcher(List<TelegramCommandHandler> handlers, MessageSource messageSource) {
         this.handlers = handlers;
         this.messageSource = messageSource;
     }
@@ -22,7 +22,7 @@ public class TelegramCommandService {
      * @param context The command context containing the text and user locale
      * @return Formatted response ready to be sent to the chat
      */
-    public String executeCommand(TelegramCommandContext context) {
+    public String dispatch(TelegramCommandContext context) {
         if (context.rawText() == null || context.rawText().isBlank()) {
             return messageSource.getMessage("telegram.command.empty", null, context.locale());
         }
