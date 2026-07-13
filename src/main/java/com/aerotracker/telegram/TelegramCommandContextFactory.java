@@ -27,8 +27,18 @@ public class TelegramCommandContextFactory {
 
         // 2. Extract Locale from languageCode (using the new camelCase getter)
         Locale locale = Locale.ENGLISH; // Default fallback language
-        if (update.message().from() != null && update.message().from().languageCode() != null) {
-            locale = Locale.forLanguageTag(update.message().from().languageCode());
+        String username = "Anonymous";
+
+        if (update.message().from() != null) {
+            if (update.message().from().languageCode() != null) {
+                locale = Locale.forLanguageTag(update.message().from().languageCode());
+            }
+            
+            if (update.message().from().username() != null) {
+                username = update.message().from().username();
+            } else if (update.message().from().firstName() != null) {
+                username = update.message().from().firstName();
+            }
         }
 
         // 3. Tokenize and clean up the message text
@@ -39,6 +49,7 @@ public class TelegramCommandContextFactory {
         // 4. Build the immutable command context
         TelegramCommandContext context = new TelegramCommandContext(
                 chatId,
+                username,
                 messageText,
                 command,
                 tokens,

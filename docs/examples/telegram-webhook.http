@@ -1,0 +1,68 @@
+### Act 1: Track Flight Route (/track)
+POST http://localhost:8080/api/telegram/webhook
+Content-Type: application/json
+
+{
+  "update_id": 10001,
+  "message": {
+    "message_id": 1,
+    "from": {
+      "id": 998877,
+      "is_bot": false,
+      "first_name": "Sebastian",
+      "username": "escalasebastian",
+      "language_code": "en"
+    },
+    "chat": {
+      "id": 998877,
+      "type": "private"
+    },
+    "text": "/track MAD AMS 2026-08-10 150"
+  }
+}
+
+### Act 2: List Active Tracking Alerts (/list)
+POST http://localhost:8080/api/telegram/webhook
+Content-Type: application/json
+
+{
+  "update_id": 10002,
+  "message": {
+    "message_id": 2,
+    "from": {
+      "id": 998877,
+      "is_bot": false,
+      "first_name": "Sebastian",
+      "username": "escalasebastian",
+      "language_code": "en"
+    },
+    "chat": {
+      "id": 998877,
+      "type": "private"
+    },
+    "text": "/list"
+  }
+}
+
+### Act 3: Untrack Alert (/untrack 1)
+POST http://localhost:8080/api/telegram/webhook
+Content-Type: application/json
+
+{
+  "update_id": 10003,
+  "message": {
+    "message_id": 3,
+    "from": {
+      "id": 998877,
+      "is_bot": false,
+      "first_name": "Sebastian",
+      "username": "escalasebastian",
+      "language_code": "en"
+    },
+    "chat": {
+      "id": 998877,
+      "type": "private"
+    },
+    "text": "/untrack 1"
+  }
+}

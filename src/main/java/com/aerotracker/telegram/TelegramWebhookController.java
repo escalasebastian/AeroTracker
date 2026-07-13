@@ -41,6 +41,9 @@ public class TelegramWebhookController {
         try {
             // 1. Dispatch command to the appropriate handler
             String responseText = commandDispatcher.dispatch(context);
+
+            logger.info(">>> TELEGRAM RESPONSE (Chat {}):\n{}", context.chatId(), responseText);
+
             // 2. Send response back to the user via Telegram API
             telegramClient.sendMessage(context.chatId(), responseText);
         } catch (Exception e) {
