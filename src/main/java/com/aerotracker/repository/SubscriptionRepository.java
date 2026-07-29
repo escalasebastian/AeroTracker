@@ -2,6 +2,7 @@ package com.aerotracker.repository;
 
 import com.aerotracker.entity.Subscription;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -29,4 +30,12 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
      * Used to prevent duplicate alerts.
      */
     Optional<Subscription> findByUserIdAndRouteIdAndActiveTrue(Long userId, Long routeId);
+
+    /**
+     * Finds all active subscriptions across ALL users.
+     * Uses JOIN FETCH to eagerly load the associated Route and User entities in a single SQL query.
+     * This prevents the "N+1 select problem" when the scheduler iterates through subscriptions.
+     */
+    @Query("SELECT s FROM Subscription s JOIN FETCH s.route JOIN FETCH s.user WHERE s.active = true")
+    List<Subscription> findAllActiveWithRouteAndUser();
 }

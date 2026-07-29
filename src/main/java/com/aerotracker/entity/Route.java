@@ -87,4 +87,17 @@ public class Route {
     public void setReturnDate(LocalDate returnDate) {
         this.returnDate = returnDate;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Route route = (Route) o;
+        return id != null && id.equals(route.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
