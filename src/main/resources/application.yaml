@@ -11,13 +11,18 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
 telegram:
   bot-token: ${TELEGRAM_BOT_TOKEN:mock-token-for-dev}
+  
 aerotracker:
   scheduler:
     interval-ms: 1800000
