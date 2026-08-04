@@ -1,5 +1,6 @@
 package com.aerotracker.scheduler.job;
 
+import com.aerotracker.common.event.PriceCheckEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -20,10 +21,9 @@ public class PriceCheckJob {
     public void triggerPriceChecks() {
         log.info("⏰ Scheduler waking up... Generating price check request.");
 
-        // Mock route for testing. Later we will fetch active routes from the database.
-        String route = "MAD-JFK 2026-12-25";
+        PriceCheckEvent event = new PriceCheckEvent(52923985L, "MAD", "JFK", "2026-12-25", null);
 
         // Send the message to the Price Checker's input queue
-        rabbitTemplate.convertAndSend("price-check-requests-queue", route);
+        rabbitTemplate.convertAndSend("price-check-requests-queue", event);
     }
 }

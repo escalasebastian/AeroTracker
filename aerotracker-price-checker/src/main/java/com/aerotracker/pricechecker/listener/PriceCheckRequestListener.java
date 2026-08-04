@@ -1,5 +1,7 @@
 package com.aerotracker.pricechecker.listener;
 
+import com.aerotracker.common.event.PriceAlertEvent;
+import com.aerotracker.common.event.PriceCheckEvent;
 import com.aerotracker.pricechecker.config.RabbitMQConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,29 +15,29 @@ public class PriceCheckRequestListener {
     private static final Logger log = LoggerFactory.getLogger(PriceCheckRequestListener.class);
     private final RabbitTemplate rabbitTemplate;
 
-    // Inyectamos la herramienta que nos permite ENVIAR mensajes
     public PriceCheckRequestListener(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    // Escuchamos las peticiones de comprobación de precios
+    // We receive the JSON object directly, automatically deserialized by Jackson
     @RabbitListener(queues = RabbitMQConfig.PRICE_CHECK_REQUESTS_QUEUE)
-    public void handlePriceCheckRequest(String route) {
-        log.info("🔍 Petición de comprobación recibida para la ruta: {}", route);
+    public void handlePriceCheckRequest(PriceCheckEvent request) {
+        log.info("🔍 Received price check request for: {} to {}", request.getOrigin(), request.getDestination());
 
-        // Simulemos que tardamos 2 segundos en consultar la API (como hacíamos antes con el Mock)
+        // Simulate a 2-second delay for querying the external API
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        // Simulemos que el mock nos ha devuelto que vale 50€
-        String priceAlertMessage = "El precio para " + route + " ha bajado a 50€!";
-        log.info("✅ Precio obtenido. Enviando mensaje al Notification Service...");
+        log.info("✅ Price found. Sending alert to Notification Service...");
 
-        // ¡Magia! Enviamos el mensaje a la cola del Notification Service
-        // OJO: "price-alerts-queue" es el nombre exacto que le dimos en el otro servicio
-        rabbitTemplate.convertAndSend("price-alerts-queue", priceAlertMessage);
+        // Create the outgoing event, preserving the original Chat ID so the Notification Service knows who to message
+        String routeDescription = request.getOrigin() + "-" + request.getDestination();
+        PriceAlertEvent alertEvent = new PriceAlertEvent(request.getChatId(), routeDescription, 50.0, "EUR");
+
+        // Publish the event to the next queue
+        rabbitTemplate.convertAndSend("price-alerts-queue", alertEvent);
     }
 }

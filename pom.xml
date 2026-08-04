@@ -15,6 +15,7 @@
     <name>AeroTracker</name>
     <modules>
         <module>aerotracker-monolith</module>
+        <module>aerotracker-common</module>
         <module>aerotracker-notification</module>
         <module>aerotracker-price-checker</module>
         <module>aerotracker-scheduler</module>
