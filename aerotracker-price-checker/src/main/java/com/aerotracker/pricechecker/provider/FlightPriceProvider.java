@@ -1,7 +1,7 @@
-package com.aerotracker.provider;
+package com.aerotracker.pricechecker.provider;
 
-import com.aerotracker.dto.FlightPriceRequest;
-import com.aerotracker.dto.FlightPriceResponse;
+import com.aerotracker.pricechecker.dto.FlightPriceRequest;
+import com.aerotracker.pricechecker.dto.FlightPriceResponse;
 
 public interface FlightPriceProvider {
 

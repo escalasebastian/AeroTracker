@@ -1,31 +1,38 @@
 package com.aerotracker.common.event;
 
+import java.math.BigDecimal;
+import java.util.Map;
+
 public class PriceCheckEvent {
 
-    private Long chatId;
+    private Long routeId;
     private String origin;
     private String destination;
     private String departureDate;
     private String returnDate; // Can be null for one-way flights
+    
+    // Key: Telegram Chat ID, Value: Target Price
+    private Map<Long, BigDecimal> subscriptions;
 
     // Default constructor is REQUIRED by Jackson (Spring's JSON converter) for deserialization
     public PriceCheckEvent() {
     }
 
-    public PriceCheckEvent(Long chatId, String origin, String destination, String departureDate, String returnDate) {
-        this.chatId = chatId;
+    public PriceCheckEvent(Long routeId, String origin, String destination, String departureDate, String returnDate, Map<Long, BigDecimal> subscriptions) {
+        this.routeId = routeId;
         this.origin = origin;
         this.destination = destination;
         this.departureDate = departureDate;
         this.returnDate = returnDate;
+        this.subscriptions = subscriptions;
     }
 
-    public Long getChatId() {
-        return chatId;
+    public Long getRouteId() {
+        return routeId;
     }
 
-    public void setChatId(Long chatId) {
-        this.chatId = chatId;
+    public void setRouteId(Long routeId) {
+        this.routeId = routeId;
     }
 
     public String getOrigin() {
@@ -58,5 +65,13 @@ public class PriceCheckEvent {
 
     public void setReturnDate(String returnDate) {
         this.returnDate = returnDate;
+    }
+
+    public Map<Long, BigDecimal> getSubscriptions() {
+        return subscriptions;
+    }
+
+    public void setSubscriptions(Map<Long, BigDecimal> subscriptions) {
+        this.subscriptions = subscriptions;
     }
 }

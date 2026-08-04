@@ -4,3 +4,19 @@ spring:
     port: 5672
     username: guest
     password: guest
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/aerotracker}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+aerotracker:
+  scheduler:
+    interval-ms: 30000 # Check every 30 seconds instead of 10 for safety

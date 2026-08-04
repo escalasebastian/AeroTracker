@@ -1,4 +1,4 @@
-package com.aerotracker.dto;
+package com.aerotracker.pricechecker.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
