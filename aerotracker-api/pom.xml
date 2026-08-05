@@ -10,8 +10,8 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>aerotracker-monolith</artifactId>
-    <name>AeroTracker Monolith</name>
+    <artifactId>aerotracker-api</artifactId>
+    <name>AeroTracker API</name>
     <dependencies>
         <!-- Common Module -->
         <dependency>

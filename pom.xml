@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
     <name>AeroTracker</name>
     <modules>
-        <module>aerotracker-monolith</module>
+        <module>aerotracker-api</module>
         <module>aerotracker-common</module>
         <module>aerotracker-notification</module>
         <module>aerotracker-price-checker</module>
