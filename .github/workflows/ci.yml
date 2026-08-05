@@ -76,6 +76,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
           
+      - name: Set lower case repository name
+        run: |
+          echo "REPO_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+
       - name: Build and Push aerotracker-api
         uses: docker/build-push-action@v5
         with:
@@ -83,8 +87,8 @@ jobs:
           file: ./aerotracker-api/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/aerotracker-api:latest
-            ghcr.io/${{ github.repository }}/aerotracker-api:${{ github.sha }}
+            ghcr.io/${{ env.REPO_NAME }}/aerotracker-api:latest
+            ghcr.io/${{ env.REPO_NAME }}/aerotracker-api:${{ github.sha }}
             
       - name: Build and Push aerotracker-scheduler
         uses: docker/build-push-action@v5
@@ -93,8 +97,8 @@ jobs:
           file: ./aerotracker-scheduler/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/aerotracker-scheduler:latest
-            ghcr.io/${{ github.repository }}/aerotracker-scheduler:${{ github.sha }}
+            ghcr.io/${{ env.REPO_NAME }}/aerotracker-scheduler:latest
+            ghcr.io/${{ env.REPO_NAME }}/aerotracker-scheduler:${{ github.sha }}
             
       - name: Build and Push aerotracker-price-checker
         uses: docker/build-push-action@v5
@@ -103,8 +107,8 @@ jobs:
           file: ./aerotracker-price-checker/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/aerotracker-price-checker:latest
-            ghcr.io/${{ github.repository }}/aerotracker-price-checker:${{ github.sha }}
+            ghcr.io/${{ env.REPO_NAME }}/aerotracker-price-checker:latest
+            ghcr.io/${{ env.REPO_NAME }}/aerotracker-price-checker:${{ github.sha }}
             
       - name: Build and Push aerotracker-notification
         uses: docker/build-push-action@v5
@@ -113,5 +117,5 @@ jobs:
           file: ./aerotracker-notification/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/aerotracker-notification:latest
-            ghcr.io/${{ github.repository }}/aerotracker-notification:${{ github.sha }}
+            ghcr.io/${{ env.REPO_NAME }}/aerotracker-notification:latest
+            ghcr.io/${{ env.REPO_NAME }}/aerotracker-notification:${{ github.sha }}
