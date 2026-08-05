@@ -27,7 +27,7 @@ public class PriceCheckJob {
         this.subscriptionRepository = subscriptionRepository;
     }
 
-    @Scheduled(fixedRateString = "${aerotracker.scheduler.interval-ms:30000}")
+    @Scheduled(fixedRateString = "${aerotracker.scheduler.interval-ms:300000}", initialDelayString = "${aerotracker.scheduler.initial-delay-ms:60000}")
     public void triggerPriceChecks() {
         log.info("⏰ Scheduler waking up... Reading active subscriptions from Database.");
 
