@@ -3,7 +3,7 @@ package com.aerotracker.telegram;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-
+import com.aerotracker.telegram.dto.TelegramUpdatesResponse;
 @Component
 public class TelegramClient {
     private final RestClient restClient;
@@ -26,6 +26,20 @@ public class TelegramClient {
                 .body(requestBody)
                 .retrieve()
                 .toBodilessEntity();
+    }
+
+    /**
+     * Fetches updates from Telegram via Long Polling.
+     */
+    public TelegramUpdatesResponse getUpdates(Long offset, int timeout) {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/getUpdates")
+                        .queryParam("offset", offset)
+                        .queryParam("timeout", timeout)
+                        .build())
+                .retrieve()
+                .body(TelegramUpdatesResponse.class);
     }
 
     private record SendMessageRequest(

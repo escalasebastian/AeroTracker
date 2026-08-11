@@ -4,6 +4,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "telegram")
 public record TelegramProperties(
-        String botToken
+        String botToken,
+        Integer pollingTimeout
 ) {
+    @Override
+    public Integer pollingTimeout() {
+        return pollingTimeout != null ? pollingTimeout : 30;
+    }
 }
