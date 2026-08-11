@@ -1,18 +1,4 @@
 services:
-  caddy:
-    image: caddy:alpine
-    container_name: caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - aerotracker-api
-
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq
@@ -86,6 +72,3 @@ services:
       rabbitmq:
         condition: service_healthy
 
-volumes:
-  caddy_data:
-  caddy_config:

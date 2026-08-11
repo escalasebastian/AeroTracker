@@ -111,8 +111,10 @@
 
 **Goal:** Deploy the system to the cloud.
 
-**Initially:** EC2 + RDS (PostgreSQL)
+- **Phase 7.1:** AWS IAM, Custom VPC, Subnets, Security Groups & RDS PostgreSQL 16
+- **Phase 7.2:** EC2 Compute Deployment with Docker Compose & Caddy HTTPS Reverse Proxy
+- **Phase 7.3:** Serverless Container Migration with AWS ECS + Fargate & Service Connect
+- **Phase 7.4:** Cloud Observability & Monitoring with AWS CloudWatch (Dashboards & Alarms)
 
-**Later:** ECS + Fargate + CloudWatch
-
-**Learn:** cloud deployment, networking, observability, security.
+**Status:** Completed
+**Learn:** cloud deployment, serverless container orchestration, networking, observability, security.
