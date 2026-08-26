@@ -21,7 +21,7 @@ resource "aws_ecs_task_definition" "scheduler" {
         },
         {
           "name"  = "DB_URL"
-          "value" = "jdbc:postgresql://aerotracker-db.c9i66uq80gy3.eu-west-1.rds.amazonaws.com:5432/aerotracker"
+          "value" = "jdbc:postgresql://${aws_db_instance.main.endpoint}/aerotracker"
         },
         {
           "name"  = "JAVA_TOOL_OPTIONS"
@@ -78,7 +78,7 @@ resource "aws_ecs_task_definition" "notification" {
         },
         {
           "name"  = "DB_URL"
-          "value" = "jdbc:postgresql://aerotracker-db.c9i66uq80gy3.eu-west-1.rds.amazonaws.com:5432/aerotracker"
+          "value" = "jdbc:postgresql://${aws_db_instance.main.endpoint}/aerotracker"
         },
         {
           "name"  = "JAVA_TOOL_OPTIONS"
@@ -276,7 +276,7 @@ resource "aws_ecs_task_definition" "api" {
         },
         {
           "name"  = "DB_URL"
-          "value" = "jdbc:postgresql://aerotracker-db.c9i66uq80gy3.eu-west-1.rds.amazonaws.com:5432/aerotracker"
+          "value" = "jdbc:postgresql://${aws_db_instance.main.endpoint}/aerotracker"
         },
         {
           "name"  = "JAVA_TOOL_OPTIONS"
@@ -337,7 +337,7 @@ resource "aws_ecs_task_definition" "price_checker" {
         },
         {
           "name"  = "DB_URL"
-          "value" = "jdbc:postgresql://aerotracker-db.c9i66uq80gy3.eu-west-1.rds.amazonaws.com:5432/aerotracker"
+          "value" = "jdbc:postgresql://${aws_db_instance.main.endpoint}/aerotracker"
         },
         {
           "name"  = "JAVA_TOOL_OPTIONS"

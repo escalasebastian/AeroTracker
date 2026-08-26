@@ -4,7 +4,7 @@ resource "aws_cloudwatch_log_group" "price_checker" {
   kms_key_id        = null
   log_group_class   = "STANDARD"
   name              = "/ecs/aerotracker-price-checker"
-  retention_in_days = 0
+  retention_in_days = 7
   skip_destroy      = false
   tags              = {}
   tags_all          = {}
@@ -64,7 +64,7 @@ resource "aws_cloudwatch_log_group" "notification" {
   kms_key_id        = null
   log_group_class   = "STANDARD"
   name              = "/ecs/aerotracker-notification"
-  retention_in_days = 0
+  retention_in_days = 7
   skip_destroy      = false
   tags              = {}
   tags_all          = {}
@@ -74,7 +74,7 @@ resource "aws_cloudwatch_log_group" "rabbitmq" {
   kms_key_id        = null
   log_group_class   = "STANDARD"
   name              = "/ecs/aerotracker-rabbitmq"
-  retention_in_days = 0
+  retention_in_days = 7
   skip_destroy      = false
   tags              = {}
   tags_all          = {}
@@ -84,7 +84,7 @@ resource "aws_cloudwatch_log_group" "api" {
   kms_key_id        = null
   log_group_class   = "STANDARD"
   name              = "/ecs/aerotracker-api"
-  retention_in_days = 0
+  retention_in_days = 7
   skip_destroy      = false
   tags              = {}
   tags_all          = {}
@@ -94,7 +94,7 @@ resource "aws_cloudwatch_log_group" "scheduler" {
   kms_key_id        = null
   log_group_class   = "STANDARD"
   name              = "/ecs/aerotracker-scheduler"
-  retention_in_days = 0
+  retention_in_days = 7
   skip_destroy      = false
   tags              = {}
   tags_all          = {}
