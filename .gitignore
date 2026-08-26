@@ -37,3 +37,17 @@ build/
 .env.*
 *.pem
 infra/aws/*.pem
+
+### Terraform ###
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.tfstate.lock.info
+crash.log
+crash.*.log
+*.tfvars
+!infra/terraform/terraform.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
