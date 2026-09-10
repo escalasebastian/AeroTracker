@@ -128,7 +128,8 @@
 - Adopt the Phase 7 infrastructure (VPC, ECS Fargate, RDS, Cloud Map, CloudWatch, bastion) into Terraform using `import` blocks, so the account state is fully described as code without recreating anything.
 - Move `DB_PASSWORD` and `TELEGRAM_BOT_TOKEN` out of plain ECS environment variables into SSM Parameter Store.
 - Restore the RDS instance from its final snapshot as a Terraform-managed resource.
-- Parameterize `desired_count` so every ECS service defaults to 0 (platform switched off, near-zero cost) and can be brought up on demand with `terraform apply -var="desired_count=1"`.
+- Parameterize `desired_count` so every ECS service defaults to 0 (platform switched off, near-zero cost).
+- Replace it with a single `platform_enabled` switch that also deletes RDS on shutdown (no snapshot, since demo data is disposable) and creates an empty instance on start-up, where Flyway rebuilds the schema, so `terraform apply -var="platform_enabled=true"` brings the whole platform up and a plain `terraform apply` switches it off.
 
 **Learn:** Infrastructure as Code, importing unmanaged cloud resources, secrets management, cost-aware infrastructure design.
 

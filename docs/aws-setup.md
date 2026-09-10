@@ -2,7 +2,7 @@
 
 This guide documents how to provision, operate and tear down the AeroTracker cloud infrastructure in region **`eu-west-1` (Ireland)** using **Terraform** (`infra/terraform/`).
 
-The account runs under AWS's credit-based Free Tier, not the legacy 12-month tier: Fargate and RDS are **not** free by default. The infrastructure defaults to `desired_count = 0` (switched off) to keep the residual cost near $0/month, and is brought up on demand for demos.
+The account runs under AWS's credit-based Free Tier, not the legacy 12-month tier: Fargate and RDS are **not** free by default. The whole platform is controlled by a single boolean, `platform_enabled`, which defaults to `false`: no ECS task runs and no RDS instance exists, so the residual cost stays near $0/month. It is brought up on demand for demos.
 
 ---
 
@@ -22,11 +22,12 @@ cd infra/terraform
 terraform init
 ```
 
-Secrets (`db_password`, `telegram_bot_token`) are supplied through a gitignored `secrets.auto.tfvars` file, never committed:
+Secrets (`db_password`, `telegram_bot_token`, `serpapi_key`) are supplied through a gitignored `secrets.auto.tfvars` file, never committed:
 
 ```hcl
 db_password        = "..."
 telegram_bot_token = "..."
+serpapi_key        = "..."
 ```
 
 Review the plan before applying anything:
@@ -39,13 +40,19 @@ terraform plan
 
 ## 3. Bringing the platform up
 
-The platform stays at zero cost by default (`desired_count = 0` in `terraform.tfvars`). To bring every ECS service up for a demo:
+The platform stays switched off by default (`platform_enabled = false` in `terraform.tfvars`). To bring it up for a demo:
 
 ```bash
-terraform apply -var="desired_count=1"
+terraform apply -var="platform_enabled=true"
 ```
 
-This starts the 5 Fargate tasks (api, scheduler, price-checker, notification, rabbitmq) against the existing RDS instance and Cloud Map namespace. Wait a minute for the tasks to reach `RUNNING`, then verify:
+Terraform then:
+
+1. Creates an empty RDS instance. This is the slowest step and can take 5 to 15 minutes.
+2. Registers new task definitions whose `DB_URL` points at the restored endpoint.
+3. Starts one task for each of the 5 ECS services (api, scheduler, price-checker, notification, rabbitmq).
+
+Because the task definitions reference the RDS endpoint, Terraform only starts the services once the database exists. Wait a minute for the tasks to reach `RUNNING`, then verify:
 
 ```bash
 aws ecs describe-services --cluster aerotracker-cluster --region eu-west-1 \
@@ -69,28 +76,27 @@ aws logs tail /ecs/aerotracker-api --since 5m --region eu-west-1
 ## 4. Bringing the platform back down
 
 ```bash
-terraform apply -var="desired_count=0"
+terraform apply
 ```
 
-or simply `terraform apply` once `terraform.tfvars` is back to its default. Confirm nothing is left running:
+With `platform_enabled` back at its default `false`, Terraform scales every ECS service to zero and deletes the RDS instance without keeping a snapshot. Confirm nothing is left running:
 
 ```bash
 aws ecs list-tasks --cluster aerotracker-cluster --region eu-west-1
+aws rds describe-db-instances --region eu-west-1 --query 'DBInstances[].DBInstanceIdentifier'
 ```
 
-An empty result means the platform is back to its near-zero-cost idle state.
+Two empty results mean the platform is back to its near-zero-cost idle state.
 
 ---
 
-## 5. Restoring the database
+## 5. Database lifecycle
 
-If the RDS instance ever needs to be recreated from a snapshot (as happened when the Phase 7 infrastructure was adopted into Terraform), point `db_snapshot_identifier` at the snapshot to restore from and apply:
+The database is disposable by design. Every start-up creates an empty RDS instance with the `aerotracker` database, and the api service's Flyway migrations rebuild the schema on boot. The scheduler and price-checker only validate the schema, so if one of them starts before the api has migrated it fails once and ECS restarts it; that is expected on the first minute of a fresh start-up. Every shutdown deletes the instance with no final snapshot and no automated backups, so nothing related to RDS is left to bill.
 
-```bash
-terraform apply -var="db_snapshot_identifier=aerotracker-db-final-2026-08-26"
-```
+The trade-off is that users and subscriptions do not survive a shutdown. That is acceptable because the platform only runs for demos; keeping the data would mean paying for snapshot storage every month it sits unused.
 
-Terraform recreates the RDS instance from that snapshot and every service that references `aws_db_instance.main.endpoint` in its `DB_URL` picks up the new endpoint automatically on its next deploy.
+The instance takes its master password from `db_password` in `secrets.auto.tfvars`, the same variable that feeds the `DB_PASSWORD` SSM parameter, so changing it there before a start-up rotates the password for both.
 
 ---
 

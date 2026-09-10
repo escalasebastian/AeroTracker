@@ -34,10 +34,10 @@ variable "private_subnets" {
   }
 }
 
-variable "desired_count" {
-  description = "Number of tasks per ECS service. 0 keeps the whole platform switched off at near-zero cost; set to 1 to bring AeroTracker up for a demo."
-  type        = number
-  default     = 0
+variable "platform_enabled" {
+  description = "Single on/off switch for the platform. true creates an empty RDS instance and runs one task per ECS service; false (the default) deletes RDS without a snapshot and stops every task, leaving AeroTracker at near-zero cost."
+  type        = bool
+  default     = false
 }
 
 variable "db_username" {
@@ -62,12 +62,6 @@ variable "serpapi_key" {
   description = "SerpApi key used by the price-checker for real Google Flights prices. Supplied through secrets.auto.tfvars, never committed."
   type        = string
   sensitive   = true
-}
-
-variable "db_snapshot_identifier" {
-  description = "Final snapshot the RDS instance is restored from. Set to null to create an empty database instead."
-  type        = string
-  default     = "aerotracker-db-final-2026-08-26"
 }
 
 variable "ssh_allowed_cidr" {

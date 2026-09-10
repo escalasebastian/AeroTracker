@@ -51,3 +51,7 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+
+### AI agent context (local only) ###
+AGENTS.md
+CLAUDE.md

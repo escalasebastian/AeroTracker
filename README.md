@@ -7,7 +7,7 @@
 ![AWS](https://img.shields.io/badge/AWS-Serverless%20%7C%20ECS%20Fargate-232F3E.svg)
 ![Telegram](https://img.shields.io/badge/Telegram-Bot%20API-0088cc.svg)
 
-AeroTracker is a Telegram bot developed as a robust flight price tracker. This project started as a backend portfolio designed to demonstrate proficiency in building distributed and cloud-native systems, evolving from an initial monolith into a microservices-oriented architecture deployed on AWS as a 100% serverless platform. The account runs under AWS's credit-based Free Tier rather than the legacy 12-month tier, so Fargate and RDS are not free by default; the infrastructure is described in Terraform and kept scaled to zero (`desired_count = 0`) between demos to stay near-zero cost.
+AeroTracker is a Telegram bot developed as a robust flight price tracker. This project started as a backend portfolio designed to demonstrate proficiency in building distributed and cloud-native systems, evolving from an initial monolith into a microservices-oriented architecture deployed on AWS as a 100% serverless platform. The account runs under AWS's credit-based Free Tier rather than the legacy 12-month tier, so Fargate and RDS are not free by default; the infrastructure is described in Terraform and switched off between demos through a single `platform_enabled` variable, which stops every task and deletes the database, to stay near-zero cost.
 
 ## 🚀 Current Status
 

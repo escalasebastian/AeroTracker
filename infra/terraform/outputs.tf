@@ -19,8 +19,8 @@ output "ecs_cluster_name" {
 }
 
 output "rds_endpoint" {
-  description = "Connection endpoint (host:port) of the RDS PostgreSQL instance."
-  value       = aws_db_instance.main.endpoint
+  description = "Connection endpoint (host:port) of the RDS PostgreSQL instance. Null while the platform is switched off."
+  value       = one(aws_db_instance.main[*].endpoint)
 }
 
 output "bastion_public_ip" {
