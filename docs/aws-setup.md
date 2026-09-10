@@ -22,13 +22,16 @@ cd infra/terraform
 terraform init
 ```
 
-Secrets (`db_password`, `telegram_bot_token`, `serpapi_key`) are supplied through a gitignored `secrets.auto.tfvars` file, never committed:
+Secrets (`db_password`, `telegram_bot_token`, `serpapi_key`) and the alert email address are supplied through a gitignored `secrets.auto.tfvars` file, never committed:
 
 ```hcl
 db_password        = "..."
 telegram_bot_token = "..."
 serpapi_key        = "..."
+alert_email        = "..."
 ```
+
+After the first `terraform apply`, AWS sends a confirmation email to `alert_email`. Click its link once; alerts are not delivered until the subscription is confirmed.
 
 Review the plan before applying anything:
 
@@ -100,7 +103,17 @@ The instance takes its master password from `db_password` in `secrets.auto.tfvar
 
 ---
 
-## 6. Accessing the database directly
+## 6. Alerts
+
+While the platform is enabled, each of the 5 ECS services has a CloudWatch alarm named `AeroTracker-<service>-Down` that emails `alert_email` through the `aerotracker-alerts` SNS topic when the service stops running.
+
+The alarms rely on the free per-minute CPU metric that ECS publishes for every running service. The alarm condition can never be true, so the alarm stays `OK` while datapoints arrive and moves to `INSUFFICIENT_DATA` after 5 minutes without any, which is what happens when the task is gone. Only that transition sends an email, with the subject `INSUFFICIENT_DATA: "AeroTracker-<service>-Down"`. Start-ups stay silent because a new alarm begins in `INSUFFICIENT_DATA` as its initial state, not as a transition, and the brief restart of the scheduler or price-checker on a fresh database is shorter than the 5-minute window.
+
+The alarms are removed when the platform is switched off. The SNS topic and its subscription stay, so the email address only has to be confirmed once. The 5 alarms fit in the CloudWatch free allowance of 10 alarms, and SNS email delivery is free up to 1,000 emails per month.
+
+---
+
+## 7. Accessing the database directly
 
 The database has no public access, and SSH into the bastion host is closed by default. To open an SSH tunnel, first allow your current public address only, then start the bastion (kept stopped by default):
 
@@ -114,6 +127,6 @@ When done, stop the bastion and close SSH again with a plain `terraform apply`, 
 
 ---
 
-## 7. History: how Phase 7 was originally provisioned
+## 8. History: how Phase 7 was originally provisioned
 
 Phases 7.1–7.4 were first built by hand with the PowerShell scripts under `infra/aws/` (VPC/RDS, EC2, IAM/CloudWatch), documented for the historical record but no longer the source of truth — see `infra/aws/README.md`. Phase 8 adopted that live infrastructure into Terraform via `import` blocks; **the scripts should not be run again**, since Terraform now owns the state of these resources.

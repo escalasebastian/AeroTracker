@@ -1,4 +1,56 @@
-# CloudWatch log groups, dashboard and alarms.
+# CloudWatch log groups, dashboard and alarms, plus the email alerts.
+
+# The topic and its email subscription exist permanently, so the address is
+# confirmed once instead of after every start-up. Neither costs anything idle.
+resource "aws_sns_topic" "alerts" {
+  name = "aerotracker-alerts"
+}
+
+resource "aws_sns_topic_subscription" "alerts_email" {
+  topic_arn = aws_sns_topic.alerts.arn
+  protocol  = "email"
+  endpoint  = var.alert_email
+}
+
+locals {
+  ecs_service_names = {
+    api           = aws_ecs_service.api.name
+    scheduler     = aws_ecs_service.scheduler.name
+    price-checker = aws_ecs_service.price_checker.name
+    notification  = aws_ecs_service.notification.name
+    rabbitmq      = aws_ecs_service.rabbitmq.name
+  }
+}
+
+# One alarm per service that emails when the service stops running. ECS
+# publishes a free CPU datapoint every minute for each running service, so the
+# condition itself (fewer than one sample) can never be true: the alarm is OK
+# while datapoints arrive, and moves to INSUFFICIENT_DATA after five minutes
+# without any, which is what happens when the task is gone. Only that
+# transition sends an email. A new alarm also starts in INSUFFICIENT_DATA, but
+# that is its initial state rather than a transition, so start-ups stay silent.
+#
+# The alarms only exist while the platform is enabled; otherwise every service
+# would look down permanently.
+resource "aws_cloudwatch_metric_alarm" "service_down" {
+  for_each = var.platform_enabled ? local.ecs_service_names : {}
+
+  alarm_name        = "AeroTracker-${each.key}-Down"
+  alarm_description = "The ${each.key} service has reported no metrics for 5 minutes: its task is not running."
+  namespace         = "AWS/ECS"
+  metric_name       = "CPUUtilization"
+  dimensions = {
+    ClusterName = aws_ecs_cluster.main.name
+    ServiceName = each.value
+  }
+  statistic                 = "SampleCount"
+  period                    = 60
+  evaluation_periods        = 5
+  comparison_operator       = "LessThanThreshold"
+  threshold                 = 1
+  treat_missing_data        = "missing"
+  insufficient_data_actions = [aws_sns_topic.alerts.arn]
+}
 
 resource "aws_cloudwatch_log_group" "price_checker" {
   kms_key_id        = null
