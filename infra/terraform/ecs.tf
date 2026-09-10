@@ -1,7 +1,11 @@
 # ECS cluster, task definitions and Fargate services.
 #
-# desired_count is driven by var.desired_count: 0 leaves the platform switched
-# off at near-zero cost, 1 brings AeroTracker up.
+# Every service runs one task while var.platform_enabled is true and none
+# otherwise, which leaves the platform switched off at near-zero cost.
+
+locals {
+  task_count = var.platform_enabled ? 1 : 0
+}
 
 resource "aws_ecs_task_definition" "scheduler" {
   container_definitions = jsonencode([
@@ -21,7 +25,7 @@ resource "aws_ecs_task_definition" "scheduler" {
         },
         {
           "name"  = "DB_URL"
-          "value" = "jdbc:postgresql://${aws_db_instance.main.endpoint}/aerotracker"
+          "value" = local.db_url
         },
         {
           "name"  = "JAVA_TOOL_OPTIONS"
@@ -78,7 +82,7 @@ resource "aws_ecs_task_definition" "notification" {
         },
         {
           "name"  = "DB_URL"
-          "value" = "jdbc:postgresql://${aws_db_instance.main.endpoint}/aerotracker"
+          "value" = local.db_url
         },
         {
           "name"  = "JAVA_TOOL_OPTIONS"
@@ -183,7 +187,7 @@ resource "aws_ecs_service" "price_checker" {
   cluster                            = aws_ecs_cluster.main.arn
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
-  desired_count                      = var.desired_count
+  desired_count                      = local.task_count
   enable_ecs_managed_tags            = false
   enable_execute_command             = false
   force_delete                       = null
@@ -219,7 +223,7 @@ resource "aws_ecs_service" "notification" {
   cluster                            = aws_ecs_cluster.main.arn
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
-  desired_count                      = var.desired_count
+  desired_count                      = local.task_count
   enable_ecs_managed_tags            = false
   enable_execute_command             = false
   force_delete                       = null
@@ -276,7 +280,7 @@ resource "aws_ecs_task_definition" "api" {
         },
         {
           "name"  = "DB_URL"
-          "value" = "jdbc:postgresql://${aws_db_instance.main.endpoint}/aerotracker"
+          "value" = local.db_url
         },
         {
           "name"  = "JAVA_TOOL_OPTIONS"
@@ -337,7 +341,7 @@ resource "aws_ecs_task_definition" "price_checker" {
         },
         {
           "name"  = "DB_URL"
-          "value" = "jdbc:postgresql://${aws_db_instance.main.endpoint}/aerotracker"
+          "value" = local.db_url
         },
         {
           "name"  = "JAVA_TOOL_OPTIONS"
@@ -385,7 +389,7 @@ resource "aws_ecs_service" "scheduler" {
   cluster                            = aws_ecs_cluster.main.arn
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
-  desired_count                      = var.desired_count
+  desired_count                      = local.task_count
   enable_ecs_managed_tags            = false
   enable_execute_command             = false
   force_delete                       = null
@@ -421,7 +425,7 @@ resource "aws_ecs_service" "rabbitmq" {
   cluster                            = aws_ecs_cluster.main.arn
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
-  desired_count                      = var.desired_count
+  desired_count                      = local.task_count
   enable_ecs_managed_tags            = false
   enable_execute_command             = false
   force_delete                       = null
@@ -463,7 +467,7 @@ resource "aws_ecs_service" "api" {
   cluster                            = aws_ecs_cluster.main.arn
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
-  desired_count                      = var.desired_count
+  desired_count                      = local.task_count
   enable_ecs_managed_tags            = false
   enable_execute_command             = false
   force_delete                       = null
