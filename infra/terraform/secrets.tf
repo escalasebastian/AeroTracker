@@ -20,3 +20,10 @@ resource "aws_ssm_parameter" "telegram_bot_token" {
   type        = "SecureString"
   value       = var.telegram_bot_token
 }
+
+resource "aws_ssm_parameter" "serpapi_key" {
+  name        = "${var.ssm_parameter_prefix}/serpapi_key"
+  description = "SerpApi key used by the price-checker to fetch real Google Flights prices."
+  type        = "SecureString"
+  value       = var.serpapi_key
+}

@@ -58,6 +58,12 @@ variable "telegram_bot_token" {
   sensitive   = true
 }
 
+variable "serpapi_key" {
+  description = "SerpApi key used by the price-checker for real Google Flights prices. Supplied through secrets.auto.tfvars, never committed."
+  type        = string
+  sensitive   = true
+}
+
 variable "db_snapshot_identifier" {
   description = "Final snapshot the RDS instance is restored from. Set to null to create an empty database instead."
   type        = string

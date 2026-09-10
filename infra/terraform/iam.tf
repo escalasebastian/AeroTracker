@@ -43,6 +43,7 @@ resource "aws_iam_role_policy" "ecs_task_execution_secrets" {
       Resource = [
         aws_ssm_parameter.db_password.arn,
         aws_ssm_parameter.telegram_bot_token.arn,
+        aws_ssm_parameter.serpapi_key.arn,
       ]
     }]
   })

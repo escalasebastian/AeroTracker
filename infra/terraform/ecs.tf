@@ -357,6 +357,10 @@ resource "aws_ecs_task_definition" "price_checker" {
           "name"      = "DB_PASSWORD"
           "valueFrom" = aws_ssm_parameter.db_password.arn
         },
+        {
+          "name"      = "SERPAPI_KEY"
+          "valueFrom" = aws_ssm_parameter.serpapi_key.arn
+        },
       ]
     },
   ])
