@@ -5,11 +5,11 @@ resource "aws_service_discovery_service" "rabbitmq" {
   description   = null
   force_destroy = null
   name          = "rabbitmq"
-  namespace_id  = "ns-wrxowo7ctvzie4iq"
+  namespace_id  = aws_service_discovery_private_dns_namespace.main.id
   tags          = {}
   tags_all      = {}
   dns_config {
-    namespace_id   = "ns-wrxowo7ctvzie4iq"
+    namespace_id   = aws_service_discovery_private_dns_namespace.main.id
     routing_policy = "MULTIVALUE"
     dns_records {
       ttl  = 60
@@ -23,5 +23,5 @@ resource "aws_service_discovery_private_dns_namespace" "main" {
   name        = "aerotracker.local"
   tags        = {}
   tags_all    = {}
-  vpc         = "vpc-035f0d731c4b432e0"
+  vpc         = aws_vpc.main.id
 }

@@ -96,14 +96,15 @@ Terraform recreates the RDS instance from that snapshot and every service that r
 
 ## 6. Accessing the database directly
 
-The database has no public access. To open an SSH tunnel through the bastion host (kept stopped by default):
+The database has no public access, and SSH into the bastion host is closed by default. To open an SSH tunnel, first allow your current public address only, then start the bastion (kept stopped by default):
 
 ```bash
+terraform apply -var="ssh_allowed_cidr=<your-public-ip>/32"
 aws ec2 start-instances --instance-ids i-07148aa263ecf53c5 --region eu-west-1
 ssh -i infra/aws/aerotracker-key.pem -L 5432:<rds-endpoint>:5432 ubuntu@<bastion-public-ip>
 ```
 
-Stop the bastion again once done — its EBS volume is the only part of it that costs anything while stopped, but the instance itself would otherwise stay billable if left running.
+When done, stop the bastion and close SSH again with a plain `terraform apply`, which removes the rule. The bastion's EBS volume is the only part of it that costs anything while stopped, but the instance itself would otherwise stay billable if left running.
 
 ---
 

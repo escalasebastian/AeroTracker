@@ -46,7 +46,7 @@ resource "aws_ecs_task_definition" "scheduler" {
   ])
   cpu                      = "256"
   enable_fault_injection   = false
-  execution_role_arn       = "arn:aws:iam::206550328865:role/ecsTaskExecutionRole"
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   family                   = "aerotracker-scheduler"
   ipc_mode                 = null
   memory                   = "512"
@@ -107,7 +107,7 @@ resource "aws_ecs_task_definition" "notification" {
   ])
   cpu                      = "256"
   enable_fault_injection   = false
-  execution_role_arn       = "arn:aws:iam::206550328865:role/ecsTaskExecutionRole"
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   family                   = "aerotracker-notification"
   ipc_mode                 = null
   memory                   = "512"
@@ -164,7 +164,7 @@ resource "aws_ecs_task_definition" "rabbitmq" {
   ])
   cpu                      = "256"
   enable_fault_injection   = false
-  execution_role_arn       = "arn:aws:iam::206550328865:role/ecsTaskExecutionRole"
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   family                   = "rabbitmq"
   ipc_mode                 = null
   memory                   = "512"
@@ -180,7 +180,7 @@ resource "aws_ecs_task_definition" "rabbitmq" {
 
 resource "aws_ecs_service" "price_checker" {
   availability_zone_rebalancing      = "ENABLED"
-  cluster                            = "arn:aws:ecs:eu-west-1:206550328865:cluster/aerotracker-cluster"
+  cluster                            = aws_ecs_cluster.main.arn
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
   desired_count                      = var.desired_count
@@ -197,7 +197,7 @@ resource "aws_ecs_service" "price_checker" {
   scheduling_strategy                = "REPLICA"
   tags                               = {}
   tags_all                           = {}
-  task_definition                    = "aerotracker-price-checker:1"
+  task_definition                    = aws_ecs_task_definition.price_checker.arn
   triggers                           = {}
   wait_for_steady_state              = null
   deployment_circuit_breaker {
@@ -209,14 +209,14 @@ resource "aws_ecs_service" "price_checker" {
   }
   network_configuration {
     assign_public_ip = true
-    security_groups  = ["sg-0fba59a7dae64fb1d"]
-    subnets          = ["subnet-03fa258935823a547", "subnet-04b44780e8f673532"]
+    security_groups  = [aws_security_group.ecs.id]
+    subnets          = [aws_subnet.public_1b.id, aws_subnet.public_1a.id]
   }
 }
 
 resource "aws_ecs_service" "notification" {
   availability_zone_rebalancing      = "ENABLED"
-  cluster                            = "arn:aws:ecs:eu-west-1:206550328865:cluster/aerotracker-cluster"
+  cluster                            = aws_ecs_cluster.main.arn
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
   desired_count                      = var.desired_count
@@ -233,7 +233,7 @@ resource "aws_ecs_service" "notification" {
   scheduling_strategy                = "REPLICA"
   tags                               = {}
   tags_all                           = {}
-  task_definition                    = "aerotracker-notification:1"
+  task_definition                    = aws_ecs_task_definition.notification.arn
   triggers                           = {}
   wait_for_steady_state              = null
   deployment_circuit_breaker {
@@ -245,8 +245,8 @@ resource "aws_ecs_service" "notification" {
   }
   network_configuration {
     assign_public_ip = true
-    security_groups  = ["sg-0fba59a7dae64fb1d"]
-    subnets          = ["subnet-03fa258935823a547", "subnet-04b44780e8f673532"]
+    security_groups  = [aws_security_group.ecs.id]
+    subnets          = [aws_subnet.public_1b.id, aws_subnet.public_1a.id]
   }
 }
 
@@ -305,7 +305,7 @@ resource "aws_ecs_task_definition" "api" {
   ])
   cpu                      = "256"
   enable_fault_injection   = false
-  execution_role_arn       = "arn:aws:iam::206550328865:role/ecsTaskExecutionRole"
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   family                   = "aerotracker-api"
   ipc_mode                 = null
   memory                   = "512"
@@ -366,7 +366,7 @@ resource "aws_ecs_task_definition" "price_checker" {
   ])
   cpu                      = "256"
   enable_fault_injection   = false
-  execution_role_arn       = "arn:aws:iam::206550328865:role/ecsTaskExecutionRole"
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   family                   = "aerotracker-price-checker"
   ipc_mode                 = null
   memory                   = "512"
@@ -382,7 +382,7 @@ resource "aws_ecs_task_definition" "price_checker" {
 
 resource "aws_ecs_service" "scheduler" {
   availability_zone_rebalancing      = "ENABLED"
-  cluster                            = "arn:aws:ecs:eu-west-1:206550328865:cluster/aerotracker-cluster"
+  cluster                            = aws_ecs_cluster.main.arn
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
   desired_count                      = var.desired_count
@@ -399,7 +399,7 @@ resource "aws_ecs_service" "scheduler" {
   scheduling_strategy                = "REPLICA"
   tags                               = {}
   tags_all                           = {}
-  task_definition                    = "aerotracker-scheduler:1"
+  task_definition                    = aws_ecs_task_definition.scheduler.arn
   triggers                           = {}
   wait_for_steady_state              = null
   deployment_circuit_breaker {
@@ -411,14 +411,14 @@ resource "aws_ecs_service" "scheduler" {
   }
   network_configuration {
     assign_public_ip = true
-    security_groups  = ["sg-0fba59a7dae64fb1d"]
-    subnets          = ["subnet-03fa258935823a547", "subnet-04b44780e8f673532"]
+    security_groups  = [aws_security_group.ecs.id]
+    subnets          = [aws_subnet.public_1b.id, aws_subnet.public_1a.id]
   }
 }
 
 resource "aws_ecs_service" "rabbitmq" {
   availability_zone_rebalancing      = "ENABLED"
-  cluster                            = "arn:aws:ecs:eu-west-1:206550328865:cluster/aerotracker-cluster"
+  cluster                            = aws_ecs_cluster.main.arn
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
   desired_count                      = var.desired_count
@@ -435,7 +435,7 @@ resource "aws_ecs_service" "rabbitmq" {
   scheduling_strategy                = "REPLICA"
   tags                               = {}
   tags_all                           = {}
-  task_definition                    = "rabbitmq:1"
+  task_definition                    = aws_ecs_task_definition.rabbitmq.arn
   triggers                           = {}
   wait_for_steady_state              = null
   deployment_circuit_breaker {
@@ -447,20 +447,20 @@ resource "aws_ecs_service" "rabbitmq" {
   }
   network_configuration {
     assign_public_ip = true
-    security_groups  = ["sg-0fba59a7dae64fb1d"]
-    subnets          = ["subnet-03fa258935823a547", "subnet-04b44780e8f673532"]
+    security_groups  = [aws_security_group.ecs.id]
+    subnets          = [aws_subnet.public_1b.id, aws_subnet.public_1a.id]
   }
   service_registries {
     container_name = null
     container_port = 0
     port           = 0
-    registry_arn   = "arn:aws:servicediscovery:eu-west-1:206550328865:service/srv-swe4mj4i5hrqp7ah"
+    registry_arn   = aws_service_discovery_service.rabbitmq.arn
   }
 }
 
 resource "aws_ecs_service" "api" {
   availability_zone_rebalancing      = "ENABLED"
-  cluster                            = "arn:aws:ecs:eu-west-1:206550328865:cluster/aerotracker-cluster"
+  cluster                            = aws_ecs_cluster.main.arn
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
   desired_count                      = var.desired_count
@@ -477,7 +477,7 @@ resource "aws_ecs_service" "api" {
   scheduling_strategy                = "REPLICA"
   tags                               = {}
   tags_all                           = {}
-  task_definition                    = "aerotracker-api:1"
+  task_definition                    = aws_ecs_task_definition.api.arn
   triggers                           = {}
   wait_for_steady_state              = null
   deployment_circuit_breaker {
@@ -489,7 +489,7 @@ resource "aws_ecs_service" "api" {
   }
   network_configuration {
     assign_public_ip = true
-    security_groups  = ["sg-0fba59a7dae64fb1d"]
-    subnets          = ["subnet-03fa258935823a547", "subnet-04b44780e8f673532"]
+    security_groups  = [aws_security_group.ecs.id]
+    subnets          = [aws_subnet.public_1b.id, aws_subnet.public_1a.id]
   }
 }

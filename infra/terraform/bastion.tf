@@ -33,7 +33,7 @@ resource "aws_instance" "bastion" {
   secondary_private_ips                = []
   security_groups                      = []
   source_dest_check                    = true
-  subnet_id                            = "subnet-04b44780e8f673532"
+  subnet_id                            = aws_subnet.public_1a.id
   tags = {
     Name = "aerotracker-ec2"
   }
@@ -42,7 +42,7 @@ resource "aws_instance" "bastion" {
   }
   tenancy                = "default"
   volume_tags            = null
-  vpc_security_group_ids = ["sg-0fba59a7dae64fb1d"]
+  vpc_security_group_ids = [aws_security_group.ecs.id]
   capacity_reservation_specification {
     capacity_reservation_preference = "open"
   }

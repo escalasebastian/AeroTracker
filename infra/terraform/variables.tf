@@ -70,6 +70,12 @@ variable "db_snapshot_identifier" {
   default     = "aerotracker-db-final-2026-08-26"
 }
 
+variable "ssh_allowed_cidr" {
+  description = "Single address allowed to SSH into the bastion, e.g. \"203.0.113.10/32\". Null keeps SSH closed, which is the default."
+  type        = string
+  default     = null
+}
+
 variable "ssm_parameter_prefix" {
   description = "Prefix under which the application secrets are stored in SSM Parameter Store."
   type        = string

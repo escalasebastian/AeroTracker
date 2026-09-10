@@ -3,7 +3,7 @@
 resource "aws_db_subnet_group" "main" {
   description = "Subnet group for AeroTracker RDS"
   name        = "aerotracker-db-subnet-group"
-  subnet_ids  = ["subnet-0a0367c239013c3da", "subnet-0d1a310b260390dc4"]
+  subnet_ids  = [aws_subnet.private_1a.id, aws_subnet.private_1b.id]
   tags        = {}
   tags_all    = {}
 }

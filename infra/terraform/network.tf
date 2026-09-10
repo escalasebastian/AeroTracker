@@ -2,8 +2,8 @@
 
 resource "aws_route_table_association" "public_1a" {
   gateway_id     = null
-  route_table_id = "rtb-0561a1d1272d4fdcd"
-  subnet_id      = "subnet-04b44780e8f673532"
+  route_table_id = aws_route_table.public.id
+  subnet_id      = aws_subnet.public_1a.id
 }
 
 resource "aws_subnet" "public_1b" {
@@ -23,13 +23,13 @@ resource "aws_subnet" "public_1b" {
   tags_all = {
     Name = "aerotracker-pub-sub-1b"
   }
-  vpc_id = "vpc-035f0d731c4b432e0"
+  vpc_id = aws_vpc.main.id
 }
 
 resource "aws_route_table_association" "public_1b" {
   gateway_id     = null
-  route_table_id = "rtb-0561a1d1272d4fdcd"
-  subnet_id      = "subnet-03fa258935823a547"
+  route_table_id = aws_route_table.public.id
+  subnet_id      = aws_subnet.public_1b.id
 }
 
 resource "aws_subnet" "private_1b" {
@@ -49,7 +49,7 @@ resource "aws_subnet" "private_1b" {
   tags_all = {
     Name = "aerotracker-priv-sub-1b"
   }
-  vpc_id = "vpc-035f0d731c4b432e0"
+  vpc_id = aws_vpc.main.id
 }
 
 resource "aws_internet_gateway" "main" {
@@ -59,14 +59,14 @@ resource "aws_internet_gateway" "main" {
   tags_all = {
     Name = "aerotracker-igw"
   }
-  vpc_id = "vpc-035f0d731c4b432e0"
+  vpc_id = aws_vpc.main.id
 }
 
 resource "aws_route_table" "public" {
   propagating_vgws = []
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = "igw-0c474b9ddf490ddeb"
+    gateway_id = aws_internet_gateway.main.id
   }
   tags = {
     Name = "aerotracker-public-rt"
@@ -74,7 +74,7 @@ resource "aws_route_table" "public" {
   tags_all = {
     Name = "aerotracker-public-rt"
   }
-  vpc_id = "vpc-035f0d731c4b432e0"
+  vpc_id = aws_vpc.main.id
 }
 
 resource "aws_subnet" "public_1a" {
@@ -94,7 +94,7 @@ resource "aws_subnet" "public_1a" {
   tags_all = {
     Name = "aerotracker-pub-sub-1a"
   }
-  vpc_id = "vpc-035f0d731c4b432e0"
+  vpc_id = aws_vpc.main.id
 }
 
 resource "aws_subnet" "private_1a" {
@@ -114,7 +114,7 @@ resource "aws_subnet" "private_1a" {
   tags_all = {
     Name = "aerotracker-priv-sub-1a"
   }
-  vpc_id = "vpc-035f0d731c4b432e0"
+  vpc_id = aws_vpc.main.id
 }
 
 resource "aws_vpc" "main" {
