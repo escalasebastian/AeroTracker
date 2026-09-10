@@ -1,6 +1,7 @@
 package com.aerotracker.telegram.handler;
 
 import com.aerotracker.entity.Subscription;
+import com.aerotracker.exception.RouteLimitExceededException;
 import com.aerotracker.service.SubscriptionService;
 import com.aerotracker.telegram.TelegramCommandContext;
 import org.springframework.context.MessageSource;
@@ -39,7 +40,7 @@ public class TrackCommandHandler implements TelegramCommandHandler {
     public String handle(TelegramCommandContext context) {
         List<String> tokens = List.of(context.tokens());
 
-        // Must have at least 5 tokens: [/track, MAD, AMS, 2026-08-10, 150]
+        // Must have at least 5 tokens: [/track, MAD, AMS, 2027-03-15, 150]
         if (tokens.size() < 5 || tokens.size() > 6) {
             return messageSource.getMessage("telegram.track.invalid-format", null, context.locale());
         }
@@ -52,17 +53,22 @@ public class TrackCommandHandler implements TelegramCommandHandler {
             BigDecimal targetPrice;
 
             if (tokens.size() == 6) {
-                // Round-trip: [/track, MAD, AMS, 2026-08-10, 2026-08-17, 150]
+                // Round-trip: [/track, MAD, AMS, 2027-03-15, 2027-03-22, 150]
                 returnDate = LocalDate.parse(tokens.get(4));
                 targetPrice = new BigDecimal(tokens.get(5));
             } else {
-                // One-way: [/track, MAD, AMS, 2026-08-10, 150]
+                // One-way: [/track, MAD, AMS, 2027-03-15, 150]
                 targetPrice = new BigDecimal(tokens.get(4));
             }
 
             // Basic domain validation: return date cannot be earlier than departure date
             if (returnDate != null && returnDate.isBefore(departureDate)) {
                 return messageSource.getMessage("telegram.error.invalid-date-range", null, context.locale());
+            }
+
+            // A departed flight can never be priced, so tracking it would only waste provider calls
+            if (departureDate.isBefore(LocalDate.now())) {
+                return messageSource.getMessage("telegram.error.past-date", null, context.locale());
             }
 
             // Delegate ACID transaction and normalization to the domain service
@@ -100,6 +106,11 @@ public class TrackCommandHandler implements TelegramCommandHandler {
 
         } catch (DateTimeParseException | NumberFormatException e) {
             return messageSource.getMessage("telegram.track.invalid-format", null, context.locale());
+        } catch (RouteLimitExceededException e) {
+            return messageSource.getMessage(
+                    "telegram.track.route-limit-reached",
+                    new Object[]{e.getLimit()},
+                    context.locale());
         } catch (Exception e) {
             return messageSource.getMessage("telegram.error.unexpected", null, context.locale());
         }

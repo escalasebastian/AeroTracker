@@ -25,6 +25,16 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
+        <!--
+            RestClient, used to query the real flight price API. Only spring-web is pulled in
+            (not the full web starter) so this service keeps running without an HTTP server.
+            Jackson is already on the classpath through the AMQP message converter.
+        -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

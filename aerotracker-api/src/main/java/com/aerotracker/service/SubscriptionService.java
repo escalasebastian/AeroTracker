@@ -3,9 +3,11 @@ package com.aerotracker.service;
 import com.aerotracker.entity.Route;
 import com.aerotracker.entity.Subscription;
 import com.aerotracker.entity.User;
+import com.aerotracker.exception.RouteLimitExceededException;
 import com.aerotracker.repository.RouteRepository;
 import com.aerotracker.repository.SubscriptionRepository;
 import com.aerotracker.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,13 +26,16 @@ public class SubscriptionService {
     private final UserRepository userRepository;
     private final RouteRepository routeRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final long maxActiveRoutes;
 
     public SubscriptionService(UserRepository userRepository,
                                RouteRepository routeRepository,
-                               SubscriptionRepository subscriptionRepository) {
+                               SubscriptionRepository subscriptionRepository,
+                               @Value("${aerotracker.tracking.max-active-routes:8}") long maxActiveRoutes) {
         this.userRepository = userRepository;
         this.routeRepository = routeRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.maxActiveRoutes = maxActiveRoutes;
     }
 
     /**
@@ -64,7 +69,15 @@ public class SubscriptionService {
             ).orElseGet(() -> routeRepository.save(new Route(origin, destination, departureDate, null)));
         }
 
-        // 3. Check if the user is already tracking this route
+        // 3. Guard the price provider quota. Every distinct monitored route is priced separately,
+        // so only a route nobody is tracking yet counts against the limit. Because this method is
+        // transactional, rejecting here also rolls back a Route that was just inserted above.
+        if (!subscriptionRepository.existsByRouteIdAndActiveTrue(route.getId())
+                && subscriptionRepository.countDistinctActiveRoutes() >= maxActiveRoutes) {
+            throw new RouteLimitExceededException(maxActiveRoutes);
+        }
+
+        // 4. Check if the user is already tracking this route
         Optional<Subscription> existingSubscription = subscriptionRepository
                 .findByUserIdAndRouteIdAndActiveTrue(user.getId(), route.getId());
 

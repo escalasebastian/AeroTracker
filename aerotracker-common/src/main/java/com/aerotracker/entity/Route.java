@@ -3,6 +3,7 @@ package com.aerotracker.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.Locale;
 
 /**
  * Represents a unique flight route between an origin and destination on specific dates.
@@ -46,8 +47,8 @@ public class Route {
 
     // 2. Convenience constructor for creating new routes
     public Route(String origin, String destination, LocalDate departureDate, LocalDate returnDate) {
-        this.origin = origin.toUpperCase();
-        this.destination = destination.toUpperCase();
+        this.origin = origin.toUpperCase(Locale.ROOT);
+        this.destination = destination.toUpperCase(Locale.ROOT);
         this.departureDate = departureDate;
         this.returnDate = returnDate;
     }
@@ -61,7 +62,7 @@ public class Route {
     }
 
     public void setOrigin(String origin) {
-        this.origin = origin != null ? origin.toUpperCase() : null;
+        this.origin = origin != null ? origin.toUpperCase(Locale.ROOT) : null;
     }
 
     public String getDestination() {
@@ -69,7 +70,7 @@ public class Route {
     }
 
     public void setDestination(String destination) {
-        this.destination = destination != null ? destination.toUpperCase() : null;
+        this.destination = destination != null ? destination.toUpperCase(Locale.ROOT) : null;
     }
 
     public LocalDate getDepartureDate() {

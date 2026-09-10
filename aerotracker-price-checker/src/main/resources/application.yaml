@@ -18,3 +18,16 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+# Real flight price source. Leave empty to fall back to simulated prices.
+serpapi:
+  api-key: ${SERPAPI_KEY:}
+
+aerotracker:
+  price-cache:
+    # A route priced within this window is not queried again, which keeps the number of
+    # external calls bounded no matter how often the scheduler runs.
+    ttl-hours: ${PRICE_CACHE_TTL_HOURS:24}
+    # Hard stop on real provider calls per calendar month, sitting below the plan's own limit.
+    # Once spent, tracked routes fall back to their last known price instead of failing.
+    monthly-call-budget: ${PRICE_MONTHLY_CALL_BUDGET:200}

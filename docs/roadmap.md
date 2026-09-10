@@ -20,8 +20,8 @@
 **Commands:**
 
 - `/start` — show help
-- `/price MAD AMS 2026-08-10` — one-way price
-- `/price MAD AMS 2026-08-10 2026-08-17` — round-trip price
+- `/price MAD AMS 2027-03-15` — one-way price
+- `/price MAD AMS 2027-03-15 2027-03-22` — round-trip price
 
 **Learn:** Telegram integration, DTOs, service design, decoupled providers, basic testing.
 
@@ -113,8 +113,23 @@
 
 - **Phase 7.1:** AWS IAM, Custom VPC, Subnets, Security Groups & RDS PostgreSQL 16
 - **Phase 7.2:** EC2 Compute Deployment with Docker Compose & Caddy HTTPS Reverse Proxy
-- **Phase 7.3:** Serverless Container Migration with AWS ECS + Fargate & Service Connect
+- **Phase 7.3:** Serverless Container Migration with AWS ECS + Fargate & Service Discovery
 - **Phase 7.4:** Cloud Observability & Monitoring with AWS CloudWatch (Dashboards & Alarms)
 
 **Status:** Completed
-**Learn:** cloud deployment, serverless container orchestration, networking, observability, security.
+**Learn:** cloud deployment, serverless container orchestration, networking, observability, security.
+
+---
+
+## Phase 8 — Infrastructure as Code
+
+**Goal:** Make the AWS infrastructure reproducible and eliminate idle cost.
+
+- Adopt the Phase 7 infrastructure (VPC, ECS Fargate, RDS, Cloud Map, CloudWatch, bastion) into Terraform using `import` blocks, so the account state is fully described as code without recreating anything.
+- Move `DB_PASSWORD` and `TELEGRAM_BOT_TOKEN` out of plain ECS environment variables into SSM Parameter Store.
+- Restore the RDS instance from its final snapshot as a Terraform-managed resource.
+- Parameterize `desired_count` so every ECS service defaults to 0 (platform switched off, near-zero cost) and can be brought up on demand with `terraform apply -var="desired_count=1"`.
+
+**Learn:** Infrastructure as Code, importing unmanaged cloud resources, secrets management, cost-aware infrastructure design.
+
+**Done when:** `terraform plan` reports no unexpected changes against the live account, and the platform can be started and stopped through a single variable.

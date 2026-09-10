@@ -1,14 +1,18 @@
-package com.aerotracker.pricechecker.provider;
-
-import com.aerotracker.pricechecker.dto.FlightPriceRequest;
-import com.aerotracker.pricechecker.dto.FlightPriceResponse;
-import org.springframework.stereotype.Component;
+package com.aerotracker.common.provider;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Random;
+import java.util.Locale;
 
-@Component
+/**
+ * Simulated price source. Produces a plausible, route-stable price without
+ * calling any external API, so it consumes no third-party quota.
+ * <p>
+ * Deliberately not annotated with @Component: each service declares it as an
+ * explicit bean when it wants it, which keeps the price checker free to wire a
+ * real provider instead without any bean ambiguity.
+ */
 public class MockFlightPriceProvider implements FlightPriceProvider {
 
     private final Random random = new Random();
@@ -21,7 +25,7 @@ public class MockFlightPriceProvider implements FlightPriceProvider {
         int hash = Math.abs((request.origin() + request.destination()).hashCode());
         double basePrice = 80.0 + (hash % 200); // Base price between 80€ and 280€
 
-        double finalPrice = basePrice;
+        double finalPrice;
 
         // 2. Simulate market behavior and price drops
         int chance = random.nextInt(100);
@@ -41,8 +45,8 @@ public class MockFlightPriceProvider implements FlightPriceProvider {
                 .setScale(2, RoundingMode.HALF_UP);
 
         return new FlightPriceResponse(
-                request.origin().toUpperCase(),
-                request.destination().toUpperCase(),
+                request.origin().toUpperCase(Locale.ROOT),
+                request.destination().toUpperCase(Locale.ROOT),
                 request.departureDate(),
                 request.returnDate(),
                 price,
