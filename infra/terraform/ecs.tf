@@ -17,7 +17,7 @@ resource "aws_ecs_task_definition" "scheduler" {
         },
         {
           "name"  = "DB_USERNAME"
-          "value" = "aerotracker_admin"
+          "value" = var.db_username
         },
         {
           "name"  = "DB_URL"
@@ -32,7 +32,7 @@ resource "aws_ecs_task_definition" "scheduler" {
         "logDriver" = "awslogs"
         "options" = {
           "awslogs-group"         = "/ecs/aerotracker-scheduler"
-          "awslogs-region"        = "eu-west-1"
+          "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "scheduler"
         }
       }
@@ -74,7 +74,7 @@ resource "aws_ecs_task_definition" "notification" {
         },
         {
           "name"  = "DB_USERNAME"
-          "value" = "aerotracker_admin"
+          "value" = var.db_username
         },
         {
           "name"  = "DB_URL"
@@ -89,7 +89,7 @@ resource "aws_ecs_task_definition" "notification" {
         "logDriver" = "awslogs"
         "options" = {
           "awslogs-group"         = "/ecs/aerotracker-notification"
-          "awslogs-region"        = "eu-west-1"
+          "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "notification"
         }
       }
@@ -156,7 +156,7 @@ resource "aws_ecs_task_definition" "rabbitmq" {
         "logDriver" = "awslogs"
         "options" = {
           "awslogs-group"         = "/ecs/aerotracker-rabbitmq"
-          "awslogs-region"        = "eu-west-1"
+          "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "rabbitmq"
         }
       }
@@ -272,7 +272,7 @@ resource "aws_ecs_task_definition" "api" {
         },
         {
           "name"  = "DB_USERNAME"
-          "value" = "aerotracker_admin"
+          "value" = var.db_username
         },
         {
           "name"  = "DB_URL"
@@ -287,7 +287,7 @@ resource "aws_ecs_task_definition" "api" {
         "logDriver" = "awslogs"
         "options" = {
           "awslogs-group"         = "/ecs/aerotracker-api"
-          "awslogs-region"        = "eu-west-1"
+          "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "api"
         }
       }
@@ -333,7 +333,7 @@ resource "aws_ecs_task_definition" "price_checker" {
         },
         {
           "name"  = "DB_USERNAME"
-          "value" = "aerotracker_admin"
+          "value" = var.db_username
         },
         {
           "name"  = "DB_URL"
@@ -348,7 +348,7 @@ resource "aws_ecs_task_definition" "price_checker" {
         "logDriver" = "awslogs"
         "options" = {
           "awslogs-group"         = "/ecs/aerotracker-price-checker"
-          "awslogs-region"        = "eu-west-1"
+          "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "price-checker"
         }
       }

@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Queries real flight prices from Google Flights through SerpApi.
@@ -49,13 +50,18 @@ public class SerpApiFlightPriceProvider implements FlightPriceProvider {
     }
 
     @Override
+    public boolean isMetered() {
+        return true;
+    }
+
+    @Override
     public FlightPriceResponse getFlightPrice(FlightPriceRequest request) {
         boolean roundTrip = request.returnDate() != null;
 
         UriComponentsBuilder uri = UriComponentsBuilder.fromUriString(BASE_URL)
                 .queryParam("engine", "google_flights")
-                .queryParam("departure_id", request.origin().toUpperCase())
-                .queryParam("arrival_id", request.destination().toUpperCase())
+                .queryParam("departure_id", request.origin().toUpperCase(Locale.ROOT))
+                .queryParam("arrival_id", request.destination().toUpperCase(Locale.ROOT))
                 .queryParam("outbound_date", request.departureDate().toString())
                 .queryParam("type", roundTrip ? TYPE_ROUND_TRIP : TYPE_ONE_WAY)
                 .queryParam("currency", CURRENCY)
@@ -94,8 +100,8 @@ public class SerpApiFlightPriceProvider implements FlightPriceProvider {
         }
 
         return new FlightPriceResponse(
-                request.origin().toUpperCase(),
-                request.destination().toUpperCase(),
+                request.origin().toUpperCase(Locale.ROOT),
+                request.destination().toUpperCase(Locale.ROOT),
                 request.departureDate(),
                 request.returnDate(),
                 price,

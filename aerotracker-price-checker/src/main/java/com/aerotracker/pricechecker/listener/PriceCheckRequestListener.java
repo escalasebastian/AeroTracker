@@ -146,12 +146,15 @@ public class PriceCheckRequestListener {
 
         // The cap on distinct tracked routes bounds steady-state usage, but routes can be added
         // and dropped freely, and each new one costs a call. This is the hard stop that keeps a
-        // burst of churn from exhausting the monthly quota.
-        long callsThisMonth = historyRepository.countByCheckedAtAfter(startOfMonth());
-        if (callsThisMonth >= monthlyCallBudget) {
-            log.warn("Monthly price-provider budget spent ({}/{}). Route {} is not refreshed this cycle.",
-                    callsThisMonth, monthlyCallBudget, route.getId());
-            return null;
+        // burst of churn from exhausting the monthly quota. It only applies to a metered provider:
+        // the simulated one costs nothing, so its history rows must not eat into any budget.
+        if (flightPriceProvider.isMetered()) {
+            long callsThisMonth = historyRepository.countByCheckedAtAfter(startOfMonth());
+            if (callsThisMonth >= monthlyCallBudget) {
+                log.warn("Monthly price-provider budget spent ({}/{}). Route {} is not refreshed this cycle.",
+                        callsThisMonth, monthlyCallBudget, route.getId());
+                return null;
+            }
         }
 
         try {

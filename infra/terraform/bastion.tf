@@ -84,7 +84,11 @@ resource "aws_instance" "bastion" {
 
   lifecycle {
     # AWS returns a hash of the launch script rather than the script itself.
-    ignore_changes = [user_data, user_data_replace_on_change]
+    # The public IP flag only reflects the current power state: a stopped
+    # bastion reports false and a running one true, and since the attribute
+    # forces replacement, reading it would destroy the instance on the next
+    # plan taken while it runs. The subnet assigns the public IP on start.
+    ignore_changes = [user_data, user_data_replace_on_change, associate_public_ip_address]
   }
 
 }

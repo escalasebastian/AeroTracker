@@ -3,6 +3,7 @@ package com.aerotracker.common.provider;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Random;
+import java.util.Locale;
 
 /**
  * Simulated price source. Produces a plausible, route-stable price without
@@ -44,8 +45,8 @@ public class MockFlightPriceProvider implements FlightPriceProvider {
                 .setScale(2, RoundingMode.HALF_UP);
 
         return new FlightPriceResponse(
-                request.origin().toUpperCase(),
-                request.destination().toUpperCase(),
+                request.origin().toUpperCase(Locale.ROOT),
+                request.destination().toUpperCase(Locale.ROOT),
                 request.departureDate(),
                 request.returnDate(),
                 price,
