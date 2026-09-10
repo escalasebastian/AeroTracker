@@ -26,3 +26,8 @@ telegram:
 aerotracker:
   scheduler:
     interval-ms: 1800000
+  tracking:
+    # How many distinct routes may be monitored at once. Each one is priced independently
+    # against the flight API, so this is what bounds monthly quota usage. Subscribers joining
+    # a route that is already tracked are never limited.
+    max-active-routes: ${MAX_ACTIVE_ROUTES:8}

@@ -1,4 +1,4 @@
-package com.aerotracker.pricechecker.dto;
+package com.aerotracker.common.provider;
 
 import java.time.LocalDate;
 

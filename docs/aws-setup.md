@@ -55,7 +55,7 @@ aws ecs describe-services --cluster aerotracker-cluster --region eu-west-1 \
 
 **Telegram verification:**
 - Send `/start` to the bot.
-- Send `/track MAD AMS 2026-08-10 150` to save a persistent subscription into RDS.
+- Send `/track MAD AMS 2027-03-15 150` to save a persistent subscription into RDS.
 - Send `/list` to confirm it was stored.
 
 Inspect logs if something doesn't come up:

@@ -20,8 +20,8 @@
 **Commands:**
 
 - `/start` — show help
-- `/price MAD AMS 2026-08-10` — one-way price
-- `/price MAD AMS 2026-08-10 2026-08-17` — round-trip price
+- `/price MAD AMS 2027-03-15` — one-way price
+- `/price MAD AMS 2027-03-15 2027-03-22` — round-trip price
 
 **Learn:** Telegram integration, DTOs, service design, decoupled providers, basic testing.
 

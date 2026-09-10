@@ -17,8 +17,8 @@ The application is currently deployed in production using **AWS ECS with AWS Far
 
 The bot supports the following main commands via Telegram:
 - `/start` - Starts the interaction with the bot.
-- `/price MAD AMS 2026-08-10` - Checks the price of a one-way flight.
-- `/price MAD AMS 2026-08-10 2026-08-17` - Checks the price of a round-trip flight.
+- `/price MAD AMS 2027-03-15` - Checks the price of a one-way flight.
+- `/price MAD AMS 2027-03-15 2027-03-22` - Checks the price of a round-trip flight.
 
 ## 🎯 What This Project Demonstrates
 
