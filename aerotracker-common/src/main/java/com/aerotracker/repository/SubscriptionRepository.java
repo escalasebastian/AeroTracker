@@ -32,10 +32,11 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     List<Subscription> findByUserTelegramUserIdAndActiveTrue(@Param("telegramUserId") Long telegramUserId);
 
     /**
-     * Checks if a user is already actively subscribing to a specific route.
-     * Used to prevent duplicate alerts.
+     * Finds a user's subscription to a specific route, whether active or cancelled.
+     * The (user_id, route_id) pair is unique and /untrack only deactivates rows, so tracking a
+     * route again must reuse this row instead of inserting a duplicate.
      */
-    Optional<Subscription> findByUserIdAndRouteIdAndActiveTrue(Long userId, Long routeId);
+    Optional<Subscription> findByUserIdAndRouteId(Long userId, Long routeId);
 
     /**
      * Finds all active subscriptions across ALL users.

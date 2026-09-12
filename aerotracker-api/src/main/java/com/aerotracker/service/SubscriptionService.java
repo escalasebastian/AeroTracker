@@ -77,14 +77,17 @@ public class SubscriptionService {
             throw new RouteLimitExceededException(maxActiveRoutes);
         }
 
-        // 4. Check if the user is already tracking this route
+        // 4. Reuse the user's subscription to this route if one exists, active or cancelled.
+        // /untrack only deactivates rows and (user_id, route_id) is unique, so inserting a new row
+        // after a cancellation would break that constraint.
         Optional<Subscription> existingSubscription = subscriptionRepository
-                .findByUserIdAndRouteIdAndActiveTrue(user.getId(), route.getId());
+                .findByUserIdAndRouteId(user.getId(), route.getId());
 
         if (existingSubscription.isPresent()) {
-            // If already tracking, update the target price
+            // Update the target price, and reactivate the alert if it had been cancelled
             Subscription sub = existingSubscription.get();
             sub.setTargetPrice(targetPrice);
+            sub.setActive(true);
             return subscriptionRepository.save(sub);
         }
 
