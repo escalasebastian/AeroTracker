@@ -454,11 +454,15 @@ resource "aws_ecs_service" "rabbitmq" {
     security_groups  = [aws_security_group.ecs.id]
     subnets          = [aws_subnet.public_1b.id, aws_subnet.public_1a.id]
   }
-  service_registries {
-    container_name = null
-    container_port = 0
-    port           = 0
-    registry_arn   = aws_service_discovery_service.rabbitmq.arn
+  # Registered in Cloud Map only while the namespace exists, that is, while the
+  # platform is enabled.
+  dynamic "service_registries" {
+    for_each = aws_service_discovery_service.rabbitmq[*].arn
+    content {
+      container_port = 0
+      port           = 0
+      registry_arn   = service_registries.value
+    }
   }
 }
 

@@ -24,6 +24,6 @@ output "rds_endpoint" {
 }
 
 output "bastion_public_ip" {
-  description = "Public IP of the bastion host, used to open an SSH tunnel into the private RDS subnet."
-  value       = aws_instance.bastion.public_ip
+  description = "Public IP of the bastion host, used to open an SSH tunnel into the private RDS subnet. Null while SSH access is closed."
+  value       = one(aws_instance.bastion[*].public_ip)
 }

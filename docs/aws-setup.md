@@ -2,7 +2,7 @@
 
 This guide documents how to provision, operate and tear down the AeroTracker cloud infrastructure in region **`eu-west-1` (Ireland)** using **Terraform** (`infra/terraform/`).
 
-The account runs under AWS's credit-based Free Tier, not the legacy 12-month tier: Fargate and RDS are **not** free by default. The whole platform is controlled by a single boolean, `platform_enabled`, which defaults to `false`: no ECS task runs and no RDS instance exists, so the residual cost stays near $0/month. It is brought up on demand for demos.
+The account runs under AWS's credit-based Free Tier, not the legacy 12-month tier: Fargate and RDS are **not** free by default. The whole platform is controlled by a single boolean, `platform_enabled`, which defaults to `false`: no ECS task runs, and neither the RDS instance nor the Cloud Map namespace exists, so the residual cost stays near $0/month. It is brought up on demand for demos.
 
 ---
 
@@ -52,8 +52,9 @@ terraform apply -var="platform_enabled=true"
 Terraform then:
 
 1. Creates an empty RDS instance. This is the slowest step and can take 5 to 15 minutes.
-2. Registers new task definitions whose `DB_URL` points at the restored endpoint.
-3. Starts one task for each of the 5 ECS services (api, scheduler, price-checker, notification, rabbitmq).
+2. Creates the Cloud Map namespace `aerotracker.local`, through which the services reach RabbitMQ at `rabbitmq.aerotracker.local`.
+3. Registers new task definitions whose `DB_URL` points at the new database endpoint.
+4. Starts one task for each of the 5 ECS services (api, scheduler, price-checker, notification, rabbitmq).
 
 Because the task definitions reference the RDS endpoint, Terraform only starts the services once the database exists. Wait a minute for the tasks to reach `RUNNING`, then verify:
 
@@ -82,7 +83,7 @@ aws logs tail /ecs/aerotracker-api --since 5m --region eu-west-1
 terraform apply
 ```
 
-With `platform_enabled` back at its default `false`, Terraform scales every ECS service to zero and deletes the RDS instance without keeping a snapshot. Confirm nothing is left running:
+With `platform_enabled` back at its default `false`, Terraform scales every ECS service to zero, deletes the RDS instance without keeping a snapshot, and deletes the Cloud Map namespace. The namespace is backed by a Route 53 private hosted zone, billed 0.50 USD for each month in which it exists for more than 12 hours, so months with the platform off cost nothing. Confirm nothing is left running:
 
 ```bash
 aws ecs list-tasks --cluster aerotracker-cluster --region eu-west-1
@@ -115,15 +116,17 @@ The alarms are removed when the platform is switched off. The SNS topic and its 
 
 ## 7. Accessing the database directly
 
-The database has no public access, and SSH into the bastion host is closed by default. To open an SSH tunnel, first allow your current public address only, then start the bastion (kept stopped by default):
+The database has no public access, and the bastion host only exists while SSH access is requested. Setting `ssh_allowed_cidr` creates the bastion and opens SSH to that single address. The platform must be enabled as well, since the database only exists then:
 
 ```bash
-terraform apply -var="ssh_allowed_cidr=<your-public-ip>/32"
-aws ec2 start-instances --instance-ids i-07148aa263ecf53c5 --region eu-west-1
+terraform apply -var="platform_enabled=true" -var="ssh_allowed_cidr=<your-public-ip>/32"
+terraform output
 ssh -i infra/aws/aerotracker-key.pem -L 5432:<rds-endpoint>:5432 ubuntu@<bastion-public-ip>
 ```
 
-When done, stop the bastion and close SSH again with a plain `terraform apply`, which removes the rule. The bastion's EBS volume is the only part of it that costs anything while stopped, but the instance itself would otherwise stay billable if left running.
+`terraform output` shows `rds_endpoint` and `bastion_public_ip`.
+
+When done, run `terraform apply -var="platform_enabled=true"` to keep the platform up, or a plain `terraform apply` to switch everything off. Both leave `ssh_allowed_cidr` unset, which destroys the bastion and closes SSH. While it exists, the bastion (a t3.micro with a public IPv4 address and a 20 GB disk) costs about 0.45 USD per day.
 
 ---
 

@@ -1,5 +1,9 @@
 # Bastion host used to open an SSH tunnel into the private RDS subnet.
-# Normally kept stopped.
+#
+# The instance only exists while var.ssh_allowed_cidr is set, which is also what
+# opens SSH to it, so asking for access creates it and closing access destroys
+# it. Nothing is billed for it otherwise, not even its disk. The key pair is
+# free and stays, so the same .pem keeps working across recreations.
 
 resource "aws_key_pair" "bastion" {
   key_name   = "aerotracker-key"
@@ -16,6 +20,8 @@ resource "aws_key_pair" "bastion" {
 }
 
 resource "aws_instance" "bastion" {
+  count = var.ssh_allowed_cidr == null ? 0 : 1
+
   ami                                  = "ami-08c7a4b4f234dfa77"
   associate_public_ip_address          = false
   availability_zone                    = "eu-west-1a"
