@@ -18,7 +18,7 @@ locals {
     scheduler     = aws_ecs_service.scheduler.name
     price-checker = aws_ecs_service.price_checker.name
     notification  = aws_ecs_service.notification.name
-    rabbitmq      = aws_ecs_service.rabbitmq.name
+    rabbitmq      = one(aws_ecs_service.rabbitmq[*].name)
   }
 }
 
