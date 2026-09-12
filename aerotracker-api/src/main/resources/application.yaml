@@ -31,3 +31,6 @@ aerotracker:
     # against the flight API, so this is what bounds monthly quota usage. Subscribers joining
     # a route that is already tracked are never limited.
     max-active-routes: ${MAX_ACTIVE_ROUTES:8}
+    # How many active alerts one person may keep, so a single user cannot take every shared
+    # route slot. Changing the target of an existing alert is never limited.
+    max-routes-per-user: ${MAX_ROUTES_PER_USER:2}

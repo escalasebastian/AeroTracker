@@ -1,5 +1,9 @@
 # Bastion host used to open an SSH tunnel into the private RDS subnet.
-# Normally kept stopped.
+#
+# The instance only exists while var.ssh_allowed_cidr is set, which is also what
+# opens SSH to it, so asking for access creates it and closing access destroys
+# it. Nothing is billed for it otherwise, not even its disk. The key pair is
+# free and stays, so the same .pem keeps working across recreations.
 
 resource "aws_key_pair" "bastion" {
   key_name   = "aerotracker-key"
@@ -16,8 +20,10 @@ resource "aws_key_pair" "bastion" {
 }
 
 resource "aws_instance" "bastion" {
+  count = var.ssh_allowed_cidr == null ? 0 : 1
+
   ami                                  = "ami-08c7a4b4f234dfa77"
-  associate_public_ip_address          = false
+  associate_public_ip_address          = true
   availability_zone                    = "eu-west-1a"
   disable_api_stop                     = false
   disable_api_termination              = false
@@ -87,7 +93,9 @@ resource "aws_instance" "bastion" {
     # The public IP flag only reflects the current power state: a stopped
     # bastion reports false and a running one true, and since the attribute
     # forces replacement, reading it would destroy the instance on the next
-    # plan taken while it runs. The subnet assigns the public IP on start.
+    # plan taken while it runs. It must still be true here: an explicit false
+    # overrides the subnet default and launches the bastion without a public
+    # address, which would make the SSH tunnel unreachable.
     ignore_changes = [user_data, user_data_replace_on_change, associate_public_ip_address]
   }
 

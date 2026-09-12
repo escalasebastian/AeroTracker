@@ -64,8 +64,14 @@ variable "serpapi_key" {
   sensitive   = true
 }
 
+variable "alert_email" {
+  description = "Email address that receives an alert when an ECS service stops running. Supplied through secrets.auto.tfvars so it stays out of the repository."
+  type        = string
+  sensitive   = true
+}
+
 variable "ssh_allowed_cidr" {
-  description = "Single address allowed to SSH into the bastion, e.g. \"203.0.113.10/32\". Null keeps SSH closed, which is the default."
+  description = "Single address allowed to SSH into the bastion, e.g. \"203.0.113.10/32\". Setting it also creates the bastion host; null, the default, destroys it and keeps SSH closed."
   type        = string
   default     = null
 }

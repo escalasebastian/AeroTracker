@@ -13,9 +13,10 @@ public class StartCommandHandler implements TelegramCommandHandler {
         this.messageSource = messageSource;
     }
 
+    // "/help" is the command most Telegram users try first, so it shows the same instructions
     @Override
     public boolean supports(String command) {
-        return "/start".equals(command);
+        return "/start".equalsIgnoreCase(command) || "/help".equalsIgnoreCase(command);
     }
 
     @Override

@@ -32,10 +32,11 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     List<Subscription> findByUserTelegramUserIdAndActiveTrue(@Param("telegramUserId") Long telegramUserId);
 
     /**
-     * Checks if a user is already actively subscribing to a specific route.
-     * Used to prevent duplicate alerts.
+     * Finds a user's subscription to a specific route, whether active or cancelled.
+     * The (user_id, route_id) pair is unique and /untrack only deactivates rows, so tracking a
+     * route again must reuse this row instead of inserting a duplicate.
      */
-    Optional<Subscription> findByUserIdAndRouteIdAndActiveTrue(Long userId, Long routeId);
+    Optional<Subscription> findByUserIdAndRouteId(Long userId, Long routeId);
 
     /**
      * Finds all active subscriptions across ALL users.
@@ -56,7 +57,17 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
      * Counts how many distinct routes are currently being monitored.
      * This is the figure that drives external price-API usage, since every distinct route is
      * priced independently while all of its subscribers share that single lookup.
+     * Routes whose departure date has passed are no longer priced, so they do not hold a slot.
      */
-    @Query("SELECT COUNT(DISTINCT s.route.id) FROM Subscription s WHERE s.active = true")
+    @Query("SELECT COUNT(DISTINCT s.route.id) FROM Subscription s "
+            + "WHERE s.active = true AND s.route.departureDate >= CURRENT_DATE")
     long countDistinctActiveRoutes();
+
+    /**
+     * Counts a user's active alerts whose departure date has not passed yet.
+     * Drives the per-user cap that keeps the shared route slots available to everyone.
+     */
+    @Query("SELECT COUNT(s) FROM Subscription s "
+            + "WHERE s.user.id = :userId AND s.active = true AND s.route.departureDate >= CURRENT_DATE")
+    long countUpcomingActiveByUser(@Param("userId") Long userId);
 }

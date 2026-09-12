@@ -2,6 +2,7 @@ package com.aerotracker.telegram.handler;
 
 import com.aerotracker.entity.Subscription;
 import com.aerotracker.exception.RouteLimitExceededException;
+import com.aerotracker.exception.UserRouteLimitExceededException;
 import com.aerotracker.service.SubscriptionService;
 import com.aerotracker.telegram.TelegramCommandContext;
 import org.springframework.context.MessageSource;
@@ -11,6 +12,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Handles the "/track" command to create or update flight tracking alerts.
@@ -46,8 +49,10 @@ public class TrackCommandHandler implements TelegramCommandHandler {
         }
 
         try {
-            String origin = tokens.get(1);
-            String destination = tokens.get(2);
+            // Routes are stored upper-cased, so lookups must use the same form: otherwise
+            // "/track mad ams" would miss an existing MAD-AMS route and try to insert a duplicate
+            String origin = tokens.get(1).toUpperCase(Locale.ROOT);
+            String destination = tokens.get(2).toUpperCase(Locale.ROOT);
             LocalDate departureDate = LocalDate.parse(tokens.get(3));
             LocalDate returnDate = null;
             BigDecimal targetPrice;
@@ -59,6 +64,14 @@ public class TrackCommandHandler implements TelegramCommandHandler {
             } else {
                 // One-way: [/track, MAD, AMS, 2027-03-15, 150]
                 targetPrice = new BigDecimal(tokens.get(4));
+            }
+
+            Optional<String> inputError = RouteInputRules.checkAirports(origin, destination);
+            if (inputError.isEmpty()) {
+                inputError = RouteInputRules.checkTargetPrice(targetPrice);
+            }
+            if (inputError.isPresent()) {
+                return messageSource.getMessage(inputError.get(), null, context.locale());
             }
 
             // Basic domain validation: return date cannot be earlier than departure date
@@ -106,6 +119,11 @@ public class TrackCommandHandler implements TelegramCommandHandler {
 
         } catch (DateTimeParseException | NumberFormatException e) {
             return messageSource.getMessage("telegram.track.invalid-format", null, context.locale());
+        } catch (UserRouteLimitExceededException e) {
+            return messageSource.getMessage(
+                    "telegram.track.user-limit-reached",
+                    new Object[]{e.getLimit()},
+                    context.locale());
         } catch (RouteLimitExceededException e) {
             return messageSource.getMessage(
                     "telegram.track.route-limit-reached",

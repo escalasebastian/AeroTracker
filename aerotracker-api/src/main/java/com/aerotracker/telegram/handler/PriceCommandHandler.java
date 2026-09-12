@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Handles the "/price" command, answering a one-off price query straight away.
@@ -51,8 +53,15 @@ public class PriceCommandHandler implements TelegramCommandHandler {
             return messageSource.getMessage("telegram.price.invalid-format", null, context.locale());
         }
 
-        String origin = tokens.get(1);
-        String destination = tokens.get(2);
+        // Normalized so "mad" and "MAD" are the same airport for the provider as well
+        String origin = tokens.get(1).toUpperCase(Locale.ROOT);
+        String destination = tokens.get(2).toUpperCase(Locale.ROOT);
+
+        Optional<String> airportError = RouteInputRules.checkAirports(origin, destination);
+        if (airportError.isPresent()) {
+            return messageSource.getMessage(airportError.get(), null, context.locale());
+        }
+
         LocalDate departureDate;
         LocalDate returnDate = null;
 
