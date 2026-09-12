@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Handles the "/track" command to create or update flight tracking alerts.
@@ -59,6 +60,14 @@ public class TrackCommandHandler implements TelegramCommandHandler {
             } else {
                 // One-way: [/track, MAD, AMS, 2027-03-15, 150]
                 targetPrice = new BigDecimal(tokens.get(4));
+            }
+
+            Optional<String> inputError = RouteInputRules.checkAirports(origin, destination);
+            if (inputError.isEmpty()) {
+                inputError = RouteInputRules.checkTargetPrice(targetPrice);
+            }
+            if (inputError.isPresent()) {
+                return messageSource.getMessage(inputError.get(), null, context.locale());
             }
 
             // Basic domain validation: return date cannot be earlier than departure date

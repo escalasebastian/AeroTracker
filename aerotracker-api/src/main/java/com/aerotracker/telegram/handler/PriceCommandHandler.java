@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Handles the "/price" command, answering a one-off price query straight away.
@@ -53,6 +54,12 @@ public class PriceCommandHandler implements TelegramCommandHandler {
 
         String origin = tokens.get(1);
         String destination = tokens.get(2);
+
+        Optional<String> airportError = RouteInputRules.checkAirports(origin, destination);
+        if (airportError.isPresent()) {
+            return messageSource.getMessage(airportError.get(), null, context.locale());
+        }
+
         LocalDate departureDate;
         LocalDate returnDate = null;
 
