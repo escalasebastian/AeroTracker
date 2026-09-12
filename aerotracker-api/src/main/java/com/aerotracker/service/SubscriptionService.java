@@ -4,6 +4,7 @@ import com.aerotracker.entity.Route;
 import com.aerotracker.entity.Subscription;
 import com.aerotracker.entity.User;
 import com.aerotracker.exception.RouteLimitExceededException;
+import com.aerotracker.exception.UserRouteLimitExceededException;
 import com.aerotracker.repository.RouteRepository;
 import com.aerotracker.repository.SubscriptionRepository;
 import com.aerotracker.repository.UserRepository;
@@ -27,15 +28,18 @@ public class SubscriptionService {
     private final RouteRepository routeRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final long maxActiveRoutes;
+    private final long maxRoutesPerUser;
 
     public SubscriptionService(UserRepository userRepository,
                                RouteRepository routeRepository,
                                SubscriptionRepository subscriptionRepository,
-                               @Value("${aerotracker.tracking.max-active-routes:8}") long maxActiveRoutes) {
+                               @Value("${aerotracker.tracking.max-active-routes:8}") long maxActiveRoutes,
+                               @Value("${aerotracker.tracking.max-routes-per-user:2}") long maxRoutesPerUser) {
         this.userRepository = userRepository;
         this.routeRepository = routeRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.maxActiveRoutes = maxActiveRoutes;
+        this.maxRoutesPerUser = maxRoutesPerUser;
     }
 
     /**
@@ -69,22 +73,30 @@ public class SubscriptionService {
             ).orElseGet(() -> routeRepository.save(new Route(origin, destination, departureDate, null)));
         }
 
-        // 3. Guard the price provider quota. Every distinct monitored route is priced separately,
+        // 3. Find the user's subscription to this route, active or cancelled. /untrack only
+        // deactivates rows and (user_id, route_id) is unique, so an existing row is reused below
+        // instead of inserting a duplicate that would break that constraint.
+        Optional<Subscription> existingSubscription = subscriptionRepository
+                .findByUserIdAndRouteId(user.getId(), route.getId());
+        boolean alreadyTracking = existingSubscription.map(Subscription::getActive).orElse(false);
+
+        // 4. Keep the shared route slots fair. Changing the target of an alert the user already has
+        // is always allowed; a new or reactivated alert counts against the per-user cap.
+        if (!alreadyTracking
+                && subscriptionRepository.countUpcomingActiveByUser(user.getId()) >= maxRoutesPerUser) {
+            throw new UserRouteLimitExceededException(maxRoutesPerUser);
+        }
+
+        // 5. Guard the price provider quota. Every distinct monitored route is priced separately,
         // so only a route nobody is tracking yet counts against the limit. Because this method is
-        // transactional, rejecting here also rolls back a Route that was just inserted above.
+        // transactional, rejecting here or above also rolls back a User or Route just inserted.
         if (!subscriptionRepository.existsByRouteIdAndActiveTrue(route.getId())
                 && subscriptionRepository.countDistinctActiveRoutes() >= maxActiveRoutes) {
             throw new RouteLimitExceededException(maxActiveRoutes);
         }
 
-        // 4. Reuse the user's subscription to this route if one exists, active or cancelled.
-        // /untrack only deactivates rows and (user_id, route_id) is unique, so inserting a new row
-        // after a cancellation would break that constraint.
-        Optional<Subscription> existingSubscription = subscriptionRepository
-                .findByUserIdAndRouteId(user.getId(), route.getId());
-
+        // 6. Update the existing row, reactivating it if it had been cancelled
         if (existingSubscription.isPresent()) {
-            // Update the target price, and reactivate the alert if it had been cancelled
             Subscription sub = existingSubscription.get();
             sub.setTargetPrice(targetPrice);
             sub.setActive(true);

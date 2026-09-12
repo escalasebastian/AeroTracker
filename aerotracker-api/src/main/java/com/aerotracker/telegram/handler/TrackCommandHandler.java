@@ -2,6 +2,7 @@ package com.aerotracker.telegram.handler;
 
 import com.aerotracker.entity.Subscription;
 import com.aerotracker.exception.RouteLimitExceededException;
+import com.aerotracker.exception.UserRouteLimitExceededException;
 import com.aerotracker.service.SubscriptionService;
 import com.aerotracker.telegram.TelegramCommandContext;
 import org.springframework.context.MessageSource;
@@ -115,6 +116,11 @@ public class TrackCommandHandler implements TelegramCommandHandler {
 
         } catch (DateTimeParseException | NumberFormatException e) {
             return messageSource.getMessage("telegram.track.invalid-format", null, context.locale());
+        } catch (UserRouteLimitExceededException e) {
+            return messageSource.getMessage(
+                    "telegram.track.user-limit-reached",
+                    new Object[]{e.getLimit()},
+                    context.locale());
         } catch (RouteLimitExceededException e) {
             return messageSource.getMessage(
                     "telegram.track.route-limit-reached",

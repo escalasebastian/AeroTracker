@@ -57,7 +57,17 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
      * Counts how many distinct routes are currently being monitored.
      * This is the figure that drives external price-API usage, since every distinct route is
      * priced independently while all of its subscribers share that single lookup.
+     * Routes whose departure date has passed are no longer priced, so they do not hold a slot.
      */
-    @Query("SELECT COUNT(DISTINCT s.route.id) FROM Subscription s WHERE s.active = true")
+    @Query("SELECT COUNT(DISTINCT s.route.id) FROM Subscription s "
+            + "WHERE s.active = true AND s.route.departureDate >= CURRENT_DATE")
     long countDistinctActiveRoutes();
+
+    /**
+     * Counts a user's active alerts whose departure date has not passed yet.
+     * Drives the per-user cap that keeps the shared route slots available to everyone.
+     */
+    @Query("SELECT COUNT(s) FROM Subscription s "
+            + "WHERE s.user.id = :userId AND s.active = true AND s.route.departureDate >= CURRENT_DATE")
+    long countUpcomingActiveByUser(@Param("userId") Long userId);
 }
