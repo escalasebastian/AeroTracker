@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -48,8 +49,10 @@ public class TrackCommandHandler implements TelegramCommandHandler {
         }
 
         try {
-            String origin = tokens.get(1);
-            String destination = tokens.get(2);
+            // Routes are stored upper-cased, so lookups must use the same form: otherwise
+            // "/track mad ams" would miss an existing MAD-AMS route and try to insert a duplicate
+            String origin = tokens.get(1).toUpperCase(Locale.ROOT);
+            String destination = tokens.get(2).toUpperCase(Locale.ROOT);
             LocalDate departureDate = LocalDate.parse(tokens.get(3));
             LocalDate returnDate = null;
             BigDecimal targetPrice;

@@ -106,7 +106,7 @@ aerotracker-price-checker/   Price providers, quota protection, alerts
 aerotracker-notification/    Telegram notifications
 aerotracker-common/          Shared entities, repositories and provider abstraction
 infra/terraform/             AWS infrastructure as code
-docs/                        AWS operating guide, architecture notes and roadmap
+docs/                        AWS operating guide and roadmap
 ```
 
 ## Roadmap
@@ -122,7 +122,7 @@ docs/                        AWS operating guide, architecture notes and roadmap
 | 7 | AWS deployment | ECS Fargate, RDS, Cloud Map, CloudWatch |
 | 8 | Infrastructure as Code and real prices | Terraform, SSM Parameter Store, SerpApi |
 
-Next: an automated test suite. Today CI builds every module and checks that the application starts, and each change is verified end to end with Docker Compose and the bot.
+Next: an automated test suite. Today CI builds every module and runs a Spring context test, and changes are verified manually end to end with Docker Compose and the bot before they are merged.
 
 ## License
 
