@@ -1,124 +1,129 @@
-# AeroTracker - Flight Price Monitoring Backend
+# AeroTracker
 
 ![Java](https://img.shields.io/badge/Java-21-orange.svg)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)
-![RabbitMQ](https://img.shields.io/badge/RabbitMQ-Message%20Broker-FF6600.svg)
-![AWS](https://img.shields.io/badge/AWS-Serverless%20%7C%20ECS%20Fargate-232F3E.svg)
-![Telegram](https://img.shields.io/badge/Telegram-Bot%20API-0088cc.svg)
+![RabbitMQ](https://img.shields.io/badge/RabbitMQ-Messaging-FF6600.svg)
+![AWS](https://img.shields.io/badge/AWS-ECS%20Fargate-232F3E.svg)
+![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC.svg)
+[![CI/CD](https://github.com/escalasebastian/AeroTracker/actions/workflows/ci.yml/badge.svg)](https://github.com/escalasebastian/AeroTracker/actions/workflows/ci.yml)
 
-AeroTracker is a Telegram bot developed as a robust flight price tracker. This project started as a backend portfolio designed to demonstrate proficiency in building distributed and cloud-native systems, evolving from an initial monolith into a microservices-oriented architecture deployed on AWS as a 100% serverless platform. The account runs under AWS's credit-based Free Tier rather than the legacy 12-month tier, so Fargate and RDS are not free by default; the infrastructure is described in Terraform and switched off between demos through a single `platform_enabled` variable, which stops every task and deletes the database, to stay near-zero cost.
+AeroTracker is a Telegram bot that watches flight prices for you. Set a target price for a route and it messages you as soon as a real Google Flights fare drops to that price or below.
 
-## 🚀 Current Status
+Behind the bot there are four Spring Boot services that talk to each other through RabbitMQ, running on AWS ECS Fargate with PostgreSQL on RDS. The whole AWS infrastructure is described in Terraform and can be switched on and off with a single variable.
 
-**Phase 7 Completed (AWS Serverless Deployment).** 
+## Try it
 
-The application is currently deployed in production using **AWS ECS with AWS Fargate** and **Amazon RDS**. The current iteration uses a simulated flight provider (`MockFlightPriceProvider`), which will soon be replaced by a real flight pricing API (evaluating providers with a usable free tier, such as Duffel or SerpApi). 
+Open [@AeroTrackerDevBot](https://t.me/AeroTrackerDevBot) on Telegram and press **Start**.
 
-The bot supports the following main commands via Telegram:
-- `/start` - Starts the interaction with the bot.
-- `/price MAD AMS 2027-03-15` - Checks the price of a one-way flight.
-- `/price MAD AMS 2027-03-15 2027-03-22` - Checks the price of a round-trip flight.
+| Command | What it does |
+|---|---|
+| `/start`, `/help` | Shows how to use the bot |
+| `/price MAD AMS 2027-03-15` | Instant simulated quote. Add a return date for a round trip |
+| `/track MAD AMS 2027-03-15 150` | Alert when a real Google Flights fare drops to 150 EUR or below. Add a return date before the price for a round trip |
+| `/list` | Your active alerts |
+| `/untrack 1` | Cancels an alert, using its number in `/list` |
 
-## 🎯 What This Project Demonstrates
+`/price` is simulated on purpose: anyone can run it as often as they like, so it never spends the metered flight-data quota. Real fares come through `/track`.
 
-This project serves as a technical showcase of advanced Backend and Cloud capabilities:
+The public instance runs during launch periods and on request rather than around the clock, to keep the cloud bill near zero (see [Cost](#cost-a-single-onoff-switch)).
 
-- **Java 21 & Spring Boot 3.x:** Use of the latest language features and dependency injection.
-- **Microservices Architecture:** Decoupled into 5 independent services (`api`, `scheduler`, `price-checker`, `notification`, and `rabbitmq`).
-- **Event-Driven Architecture:** Use of RabbitMQ for asynchronous messaging between microservices.
-- **Cloud Infrastructure (AWS):** Secure networking (VPC, Public/Private Subnets), serverless compute with ECS Fargate, and relational persistence with RDS.
-- **Service Discovery & Private DNS:** Secure internal communication using AWS Cloud Map (ECS Service Discovery).
-- **Long Polling & Security:** Refactored to Telegram Long Polling to avoid exposing incoming public ports, improving security and removing the need for a public load balancer.
-- **SOLID Principles & Clean Architecture:** Application of Dependency Inversion to facilitate switching flight providers in the future.
+## Architecture
 
-## 🏗️ Architecture Overview
-
-AeroTracker follows a distributed system design. The general operation flow is as follows:
-
-1. **User Interaction:** The user sends a command to the Telegram bot.
-2. **API Microservice (`aerotracker-api`):** Actively listens to Telegram using secure Long Polling (no webhooks).
-3. **Persistence:** The API validates the command and reads/writes subscriptions directly in PostgreSQL; it does not talk to RabbitMQ.
-4. **Event Broker (`rabbitmq`) and Workers (`scheduler`, `price-checker`, `notification`):**
-   - The *Scheduler* runs on a fixed interval and publishes a check request per tracked route to RabbitMQ.
-   - The *Price Checker* consumes those requests, communicating transparently (via Interface) with the `MockFlightPriceProvider` (upcoming real API integration), and publishes the result.
-   - The *Notification* service consumes price results and price-drop alerts and sends them back to the user via the Telegram API.
-5. **Database (`Amazon RDS`):** User profiles and monitoring subscriptions are stored in a private PostgreSQL database, inaccessible from the internet.
-6. **Observability:** All logs are centralized and monitored through AWS CloudWatch.
-
-## 🗺️ Roadmap
-
-The project has followed an iterative and progressive evolution.
-
-| Phase | Status | Focus | Main Technologies |
-| :--- | :---: | :--- | :--- |
-| **Phase 1** | ✅ Completed | Manual Price Queries | Spring Boot, Telegram API, Mock Data |
-| **Phase 2** | ✅ Completed | Persistence and Subscriptions | PostgreSQL, Spring Data JPA |
-| **Phase 3** | ✅ Completed | Automatic Monitoring | Spring Scheduling (`@Scheduled`) |
-| **Phase 4** | ✅ Completed | Distributed Architecture | RabbitMQ, Event-Driven Design |
-| **Phase 5** | ✅ Completed | Dockerization | Docker, Docker Compose |
-| **Phase 6** | ✅ Completed | CI/CD Automation | GitHub Actions, GHCR |
-| **Phase 7** | ✅ Completed | AWS Deployment (Serverless) | AWS ECS (Fargate), RDS, CloudWatch, VPC |
-| **Phase 8** | ✅ Completed | Infrastructure as Code | Terraform, SSM Parameter Store |
-
-*Planned next steps: Replace the MockProvider with a real flight pricing API.*
-
-## 🛠️ Tech Stack
-
-- **Language:** Java 21
-- **Framework:** Spring Boot 3.x
-- **Database:** PostgreSQL 16
-- **Message Broker:** RabbitMQ
-- **Containers:** Docker
-- **CI/CD:** GitHub Actions, GitHub Container Registry
-- **Cloud Computing:** Amazon Web Services (ECS Fargate, RDS, CloudWatch, VPC)
-
-## 💻 Local Development
-
-To run AeroTracker in your local environment:
-
-### Prerequisites
-- JDK 21 installed.
-- Docker and Docker Compose installed.
-- A valid Telegram bot token (create it using [BotFather](https://t.me/botfather)).
-
-### Setup Steps
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-username/AeroTracker.git
-   cd AeroTracker
-   ```
-
-2. **Configure environment variables:**
-   You need to export your Telegram bot token.
-   - *On Linux / macOS:*
-     ```bash
-     export TELEGRAM_BOT_TOKEN="your_token_here"
-     ```
-   - *On Windows (PowerShell):*
-     ```powershell
-     $env:TELEGRAM_BOT_TOKEN="your_token_here"
-     ```
-
-3. **Spin up local dependencies and start the project:**
-   Since it is now a microservices architecture, the easiest way is to use Docker Compose to spin up PostgreSQL, RabbitMQ, and the services:
-   ```bash
-   docker-compose up --build
-   ```
-
-*(Note: Because the project uses Long Polling, there is no need to expose local ports with tools like ngrok to receive Telegram updates).*
-
-## 🧪 Testing
-
-To run the unit test suite (and future integration tests with Testcontainers):
-
-```bash
-./mvnw clean test
+```mermaid
+flowchart LR
+    user([Telegram user]) <--> telegram[Telegram Bot API]
+    telegram <-- long polling --> api[aerotracker-api]
+    api <--> db[(PostgreSQL)]
+    scheduler[aerotracker-scheduler] -- reads tracked routes --> db
+    scheduler -- price-check requests --> mq{{RabbitMQ}}
+    mq --> checker[aerotracker-price-checker]
+    checker -- Google Flights search --> serpapi[SerpApi]
+    checker -- price alerts --> mq
+    mq --> notification[aerotracker-notification]
+    notification --> telegram
 ```
 
-## 🔐 Security Notes & Project Purpose
+| Service | Responsibility |
+|---|---|
+| `aerotracker-api` | Talks to Telegram through long polling, validates commands and manages users and alerts in PostgreSQL |
+| `aerotracker-scheduler` | Every 5 minutes, publishes one price-check request per distinct tracked route |
+| `aerotracker-price-checker` | Prices each route and publishes an alert when a fresh fare reaches a user's target |
+| `aerotracker-notification` | Sends the alerts to Telegram |
+| `aerotracker-common` | Shared module: entities, repositories and the `FlightPriceProvider` abstraction |
 
-- **Secrets Management:** Never commit the `TELEGRAM_BOT_TOKEN` or database credentials to version control systems. Always use environment variables or secret managers (like AWS Secrets Manager).
-- **Cloud Security:** The production database is isolated in a private subnet. Any direct maintenance requires temporarily starting the Bastion Host (EC2) to establish an SSH tunnel.
-- **Purpose:** AeroTracker was built with an educational and demonstrative focus, prioritizing simplicity, maintainability, and the application of Clean Architecture, to showcase competencies in modern software engineering and professional-grade cloud computing.
+### Design decisions
+
+- **Long polling instead of webhooks.** The bot pulls updates from Telegram, so nothing accepts traffic from the internet: no public ports, no load balancer, no TLS certificates to manage.
+- **Asynchronous pipeline.** Scheduling, pricing and notifying are separate services connected by queues. A slow flight-data API never blocks the bot, and each stage can fail and recover on its own.
+- **One lookup per route, not per user.** Routes are normalized, so everyone tracking the same flight shares a single price lookup.
+- **Protecting a small quota.** The SerpApi free plan allows 250 searches per month. The price-checker keeps a 24-hour price cache per route, stops at a hard budget of 200 calls per month, backs off for 24 hours on routes that fail, skips flights that have already departed, and only evaluates alerts against freshly fetched prices.
+- **Fair use of shared capacity.** At most 8 distinct routes are monitored at once, and each person can keep up to 2 active alerts, so a single user cannot take every slot. Airport codes and target prices are validated before anything is priced or stored.
+- **Swappable price providers.** Services depend on the `FlightPriceProvider` interface. The simulated provider serves `/price` and local development; the SerpApi provider serves `/track` when a key is configured.
+
+## Infrastructure on AWS
+
+- **Region `eu-west-1`:** 5 ECS Fargate services (the four Spring Boot services plus RabbitMQ), RDS PostgreSQL 16 in private subnets, Cloud Map private DNS so the services find RabbitMQ at `rabbitmq.aerotracker.local`, CloudWatch logs and dashboard, and SNS email alerts when a service stops running.
+- **Infrastructure as Code:** everything is managed with Terraform in [`infra/terraform`](infra/terraform). The platform was first built by hand and then adopted into Terraform with `import` blocks, without recreating anything.
+- **Secrets:** the database password, the Telegram token and the SerpApi key live in SSM Parameter Store as `SecureString` parameters and reach the containers through the task definitions, never as plain environment variables.
+- **Network exposure:** nothing accepts inbound traffic from the internet. The database is only reachable from the services, and the SSH bastion only exists while access is explicitly requested for a single address.
+- **CI/CD:** GitHub Actions builds and verifies every pull request, and on every merge to `main` pushes the four images to GitHub Container Registry, from which ECS pulls them.
+
+### Cost: a single on/off switch
+
+Fargate and RDS are not free, so the platform is off by default. One Terraform variable controls everything:
+
+```bash
+terraform apply -var="platform_enabled=true"   # bring AeroTracker up
+terraform apply                                # switch it off again
+```
+
+Switched on, it costs about 2.70 USD per day. Switched off, no task runs and neither the database nor the private DNS zone exists, so the idle cost is close to zero. The database is disposable: it is created empty on start-up, Flyway rebuilds the schema, and it is deleted without a snapshot on shutdown.
+
+The full operating guide is in [`docs/aws-setup.md`](docs/aws-setup.md).
+
+## Run it locally
+
+You need Docker and a Telegram bot token from [BotFather](https://t.me/botfather).
+
+```bash
+git clone https://github.com/escalasebastian/AeroTracker.git
+cd AeroTracker
+cp .env.example .env    # then set TELEGRAM_BOT_TOKEN
+docker compose up --build
+```
+
+This starts PostgreSQL, RabbitMQ and the four services. `SERPAPI_KEY` is optional: without it, tracked routes are priced with simulated data, which is enough to see the whole alert flow. Thanks to long polling, no tunnel such as ngrok is needed.
+
+Telegram only lets one program read a bot's messages at a time, so use a separate bot token for local development while another instance of the same bot is running.
+
+## Project structure
+
+```text
+aerotracker-api/             Telegram bot, commands, users and alerts
+aerotracker-scheduler/       Periodic price-check requests
+aerotracker-price-checker/   Price providers, quota protection, alerts
+aerotracker-notification/    Telegram notifications
+aerotracker-common/          Shared entities, repositories and provider abstraction
+infra/terraform/             AWS infrastructure as code
+docs/                        AWS operating guide, architecture notes and roadmap
+```
+
+## Roadmap
+
+| Phase | Focus | Main technologies |
+|---|---|---|
+| 1 | Manual price queries | Spring Boot, Telegram Bot API |
+| 2 | Persistence and alerts | PostgreSQL, Spring Data JPA, Flyway |
+| 3 | Automatic monitoring | Spring scheduling |
+| 4 | Distributed architecture | RabbitMQ, event-driven design |
+| 5 | Containerization | Docker, Docker Compose |
+| 6 | CI/CD | GitHub Actions, GitHub Container Registry |
+| 7 | AWS deployment | ECS Fargate, RDS, Cloud Map, CloudWatch |
+| 8 | Infrastructure as Code and real prices | Terraform, SSM Parameter Store, SerpApi |
+
+Next: an automated test suite. Today CI builds every module and checks that the application starts, and each change is verified end to end with Docker Compose and the bot.
+
+## License
+
+AeroTracker is released under the [MIT License](LICENSE).
