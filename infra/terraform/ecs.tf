@@ -420,7 +420,15 @@ resource "aws_ecs_service" "scheduler" {
   }
 }
 
+# Unlike the other services, RabbitMQ is created and deleted with the platform
+# instead of being scaled to zero. It is registered in Cloud Map, which also
+# only exists while the platform is on, and the AWS provider cannot remove a
+# registry from an existing service: the registration would outlive the
+# namespace and point at a deleted Cloud Map service. A service with no tasks
+# costs nothing, so recreating it on every start-up loses nothing.
 resource "aws_ecs_service" "rabbitmq" {
+  count = var.platform_enabled ? 1 : 0
+
   availability_zone_rebalancing      = "ENABLED"
   cluster                            = aws_ecs_cluster.main.arn
   deployment_maximum_percent         = 200
@@ -454,15 +462,10 @@ resource "aws_ecs_service" "rabbitmq" {
     security_groups  = [aws_security_group.ecs.id]
     subnets          = [aws_subnet.public_1b.id, aws_subnet.public_1a.id]
   }
-  # Registered in Cloud Map only while the namespace exists, that is, while the
-  # platform is enabled.
-  dynamic "service_registries" {
-    for_each = aws_service_discovery_service.rabbitmq[*].arn
-    content {
-      container_port = 0
-      port           = 0
-      registry_arn   = service_registries.value
-    }
+  service_registries {
+    container_port = 0
+    port           = 0
+    registry_arn   = aws_service_discovery_service.rabbitmq[0].arn
   }
 }
 

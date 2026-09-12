@@ -7,6 +7,10 @@
 resource "aws_service_discovery_service" "rabbitmq" {
   count = var.platform_enabled ? 1 : 0
 
+  # Destroyed before the pause below, so the namespace is only deleted once
+  # Cloud Map has finished removing this service.
+  depends_on = [time_sleep.cloud_map_service_deletion]
+
   description = null
   # Deregisters any instance the stopping RabbitMQ task left behind, which would
   # otherwise make the deletion fail while switching the platform off.
@@ -23,6 +27,17 @@ resource "aws_service_discovery_service" "rabbitmq" {
       type = "A"
     }
   }
+}
+
+# Cloud Map removes a deleted service asynchronously, and deleting the namespace
+# while it still counts that service fails with ResourceInUse. On shutdown
+# Terraform destroys the RabbitMQ service, then this resource, which waits,
+# then the namespace. On start-up it adds no delay.
+resource "time_sleep" "cloud_map_service_deletion" {
+  count = var.platform_enabled ? 1 : 0
+
+  destroy_duration = "60s"
+  depends_on       = [aws_service_discovery_private_dns_namespace.main]
 }
 
 resource "aws_service_discovery_private_dns_namespace" "main" {

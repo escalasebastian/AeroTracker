@@ -52,7 +52,7 @@ terraform apply -var="platform_enabled=true"
 Terraform then:
 
 1. Creates an empty RDS instance. This is the slowest step and can take 5 to 15 minutes.
-2. Creates the Cloud Map namespace `aerotracker.local`, through which the services reach RabbitMQ at `rabbitmq.aerotracker.local`.
+2. Creates the Cloud Map namespace `aerotracker.local` and the RabbitMQ ECS service registered in it, so the other services reach RabbitMQ at `rabbitmq.aerotracker.local`.
 3. Registers new task definitions whose `DB_URL` points at the new database endpoint.
 4. Starts one task for each of the 5 ECS services (api, scheduler, price-checker, notification, rabbitmq).
 
@@ -83,7 +83,7 @@ aws logs tail /ecs/aerotracker-api --since 5m --region eu-west-1
 terraform apply
 ```
 
-With `platform_enabled` back at its default `false`, Terraform scales every ECS service to zero, deletes the RDS instance without keeping a snapshot, and deletes the Cloud Map namespace. The namespace is backed by a Route 53 private hosted zone, billed 0.50 USD for each month in which it exists for more than 12 hours, so months with the platform off cost nothing. Confirm nothing is left running:
+With `platform_enabled` back at its default `false`, Terraform scales the four application services to zero, deletes the RDS instance without keeping a snapshot, and deletes the RabbitMQ ECS service and the Cloud Map namespace. Cloud Map removes a deleted service asynchronously, so Terraform waits 60 seconds between removing the RabbitMQ registration and deleting the namespace; without that pause the namespace deletion fails with `ResourceInUse`. The namespace is backed by a Route 53 private hosted zone, billed 0.50 USD for each month in which it exists for more than 12 hours, so months with the platform off cost nothing. Confirm nothing is left running:
 
 ```bash
 aws ecs list-tasks --cluster aerotracker-cluster --region eu-west-1
