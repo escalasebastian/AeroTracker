@@ -439,17 +439,19 @@ resource "aws_ecs_service" "rabbitmq" {
   force_delete                       = null
   force_new_deployment               = null
   health_check_grace_period_seconds  = 0
-  iam_role                           = "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
-  launch_type                        = "FARGATE"
-  name                               = "rabbitmq"
-  platform_version                   = "LATEST"
-  propagate_tags                     = "NONE"
-  scheduling_strategy                = "REPLICA"
-  tags                               = {}
-  tags_all                           = {}
-  task_definition                    = aws_ecs_task_definition.rabbitmq.arn
-  triggers                           = {}
-  wait_for_steady_state              = null
+  # No iam_role, unlike the imported services above: ECS rejects one when it
+  # creates an awsvpc service, which uses the service-linked role instead. The
+  # imported services keep theirs because changing it would replace them.
+  launch_type           = "FARGATE"
+  name                  = "rabbitmq"
+  platform_version      = "LATEST"
+  propagate_tags        = "NONE"
+  scheduling_strategy   = "REPLICA"
+  tags                  = {}
+  tags_all              = {}
+  task_definition       = aws_ecs_task_definition.rabbitmq.arn
+  triggers              = {}
+  wait_for_steady_state = null
   deployment_circuit_breaker {
     enable   = false
     rollback = false
