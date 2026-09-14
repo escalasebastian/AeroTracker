@@ -114,7 +114,24 @@ The alarms are removed when the platform is switched off. The SNS topic and its 
 
 ---
 
-## 7. Accessing the database directly
+## 7. Usage metrics
+
+The api writes one log line per bot command, for example `telegram_command command=/start user=123456789`. It records only the command name and the numeric Telegram id: never the message text or the username. Unrecognized input is logged as `command=unknown`.
+
+To count distinct users per command, open CloudWatch, choose **Logs Insights**, select the `/ecs/aerotracker-api` log group and a time range, and run:
+
+```text
+fields @message
+| filter @message like /telegram_command/
+| parse @message "command=* user=*" as command, user
+| stats count_distinct(user) as users, count(*) as messages by command
+```
+
+The api log group keeps 30 days of logs and is not removed when the platform is switched off, so these metrics remain available after the database is deleted.
+
+---
+
+## 8. Accessing the database directly
 
 The database has no public access, and the bastion host only exists while SSH access is requested. Setting `ssh_allowed_cidr` creates the bastion and opens SSH to that single address. The platform must be enabled as well, since the database only exists then:
 
@@ -130,6 +147,6 @@ When done, run `terraform apply -var="platform_enabled=true"` to keep the platfo
 
 ---
 
-## 8. History: how Phase 7 was originally provisioned
+## 9. History: how Phase 7 was originally provisioned
 
 Phases 7.1–7.4 were first built by hand with the PowerShell scripts under `infra/aws/` (VPC/RDS, EC2, IAM/CloudWatch), documented for the historical record but no longer the source of truth — see `infra/aws/README.md`. Phase 8 adopted that live infrastructure into Terraform via `import` blocks; **the scripts should not be run again**, since Terraform now owns the state of these resources.
