@@ -132,11 +132,14 @@ resource "aws_cloudwatch_log_group" "rabbitmq" {
   tags_all          = {}
 }
 
+# Kept for 30 days instead of 7 because it holds the usage metrics (one line per
+# bot command, see docs/aws-setup.md). The group is not removed when the
+# platform is switched off, so the metrics outlive the disposable database.
 resource "aws_cloudwatch_log_group" "api" {
   kms_key_id        = null
   log_group_class   = "STANDARD"
   name              = "/ecs/aerotracker-api"
-  retention_in_days = 7
+  retention_in_days = 30
   skip_destroy      = false
   tags              = {}
   tags_all          = {}
